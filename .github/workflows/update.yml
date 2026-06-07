@@ -16,6 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Inject dashboard password
+        env:
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+        run: |
+          sed -i "s/const PASS = \"CHANGE_ME\"/const PASS = \"${DASHBOARD_PASSWORD}\"/" index.html
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -30,18 +36,13 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
         run: python scripts/fetch_from_drive.py
+        continue-on-error: true
 
-      - name: Inject dashboard password
-        env:
-          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
-        run: |
-          sed -i "s/const PASS = \"CHANGE_ME\"/const PASS = \"${DASHBOARD_PASSWORD}\"/" index.html
-
-      - name: Commit & push updated data
+      - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/latest.json index.html
+          git add index.html data/latest.json
           git diff --staged --quiet || (
             git commit -m "data: 매출 데이터 업데이트 $(TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M KST')" &&
             git push
