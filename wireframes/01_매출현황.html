@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[WF-01] THWEET — 누적 매출현황</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0A0A0F; --surface:#111118; --surface2:#18181F; --surface3:#1E1E28;
+  --border:#2A2A38; --text:#E8E8F0; --text2:#9090A8; --text3:#55556A;
+  --accent:#6C63FF; --green:#10B981; --red:#EF4444; --amber:#F59E0B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+/* Sidebar */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100%;overflow-y:auto;}
+.logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.logo-main{font-size:17px;font-weight:700;letter-spacing:.08em;}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:3px;}
+.sb-sec{padding:14px 12px 6px;}
+.sb-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;}
+.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-bottom:2px;text-align:left;transition:background .15s;}
+.sb-btn:hover{background:var(--surface2);}
+.sb-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.sb-btn.view-active{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);font-size:11px;}
+.live-row{display:flex;align-items:center;gap:6px;color:var(--green);margin-bottom:3px;}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.upd{color:var(--text3);}
+
+/* Main */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;background:var(--surface);position:sticky;top:0;z-index:10;}
+.bc{font-size:13px;color:var(--text2);}
+.bc b{color:var(--text);font-weight:600;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.date-badge{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);background:var(--surface3);padding:4px 10px;border-radius:4px;border:1px solid var(--border);}
+.live-badge{font-size:11px;color:var(--green);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:3px 9px;border-radius:4px;font-weight:500;}
+.content{padding:20px 24px 32px;flex:1;}
+
+/* Store Cards */
+.store-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;}
+.sc:hover{background:var(--surface2);transform:translateY(-1px);}
+.sc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.sc-name{font-size:13px;font-weight:600;}
+.sc-rev{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;margin-bottom:6px;}
+.sc-row{display:flex;gap:14px;margin-bottom:10px;}
+.sc-m{font-size:11px;color:var(--text2);}
+.sc-m span{font-family:'JetBrains Mono',monospace;color:var(--text);}
+.sc-bar{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.sc-fill{height:100%;border-radius:2px;}
+.sc-pct{font-size:11px;color:var(--text2);text-align:right;}
+
+/* KPI */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+.up{color:var(--green)!important;}
+.dn{color:var(--red)!important;}
+
+/* Section */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:14px;font-weight:600;}
+.tgt-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
+.tgt-input{background:var(--surface3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 10px;width:110px;text-align:right;}
+.tgt-input:focus{outline:none;border-color:var(--accent);}
+.tgt-pct{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber);}
+.chart-wrap{position:relative;height:260px;}
+.legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:12px;}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.leg-dash{width:18px;border-top:2px dashed;}
+.ach{text-align:center;margin-top:10px;font-size:13px;color:var(--text2);}
+.ach span{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber);}
+
+/* Table */
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text2);}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surface2);}
+.mono{font-family:'JetBrains Mono',monospace;color:var(--text);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;}
+.bd-w{background:rgba(245,158,11,.15);color:var(--amber);}
+.bd-n{background:var(--surface3);color:var(--text2);}
+.bd-new{background:rgba(108,99,255,.15);color:var(--accent);font-size:10px;}
+.bar-cell{display:flex;align-items:center;gap:8px;}
+.mini-bar{flex:1;max-width:70px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.mini-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+/* WF tag */
+.wf-tag{position:fixed;top:12px;right:16px;z-index:999;background:rgba(108,99,255,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;padding:5px 12px;border-radius:6px;font-weight:500;}
+
+/* Mobile */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .store-cards{grid-template-columns:1fr;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .bnav{display:flex!important;}
+  .content{padding-bottom:76px;}
+  .wf-tag{display:none;}
+}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;height:60px;justify-content:space-around;align-items:center;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border:none;background:transparent;color:var(--text3);font-size:10px;font-family:'Inter',sans-serif;cursor:pointer;}
+.bn.active{color:var(--text);}
+.bn-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<div class="wf-tag">WF-01 · 누적 매출현황</div>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-main">THWEET</div>
+    <div class="logo-sub">ADMIN DASHBOARD</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Workspace</div>
+    <button class="sb-btn active"><span class="dot" style="background:#F59E0B"></span>전체 통합</button>
+    <button class="sb-btn"><span class="dot" style="background:#10B981"></span>쓰윗성수</button>
+    <button class="sb-btn"><span class="dot" style="background:#6C63FF"></span>성수1층</button>
+    <button class="sb-btn"><span class="dot" style="background:#F472B6"></span>쓰윗종각</button>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">View</div>
+    <button class="sb-btn view-active">누적 매출현황</button>
+    <button class="sb-btn">카테고리 품목분석</button>
+    <button class="sb-btn">패턴분석</button>
+  </div>
+  <div class="sb-foot">
+    <div class="live-row"><span class="pulse"></span>데이터 연결됨</div>
+    <div class="upd">최근 업데이트 오전 10:00</div>
+  </div>
+</aside>
+
+<nav class="bnav">
+  <button class="bn active"><span class="bn-dot" style="background:#F59E0B"></span>전체</button>
+  <button class="bn"><span class="bn-dot" style="background:#10B981"></span>성수</button>
+  <button class="bn"><span class="bn-dot" style="background:#6C63FF"></span>1층</button>
+  <button class="bn"><span class="bn-dot" style="background:#F472B6"></span>종각</button>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <span class="bc">전체 통합 / <b>누적 매출현황</b></span>
+    <div class="tb-right">
+      <span class="date-badge">2026-05-01 ~ 2026-06-07</span>
+      <span class="live-badge">● LIVE</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Store Cards -->
+    <div class="store-cards">
+      <div class="sc">
+        <div class="sc-head"><span class="dot" style="background:#10B981"></span><span class="sc-name">쓰윗성수</span></div>
+        <div class="sc-rev" style="color:#10B981">2,087만</div>
+        <div class="sc-row">
+          <div class="sc-m">일평균 <span>55만</span></div>
+          <div class="sc-m">객단가 <span>27,400원</span></div>
+        </div>
+        <div class="sc-bar"><div class="sc-fill" style="width:44%;background:#10B981"></div></div>
+        <div class="sc-pct">44% 비중</div>
+      </div>
+      <div class="sc">
+        <div class="sc-head"><span class="dot" style="background:#6C63FF"></span><span class="sc-name">성수1층</span></div>
+        <div class="sc-rev" style="color:#6C63FF">1,442만</div>
+        <div class="sc-row">
+          <div class="sc-m">일평균 <span>38만</span></div>
+          <div class="sc-m">객단가 <span>24,800원</span></div>
+        </div>
+        <div class="sc-bar"><div class="sc-fill" style="width:31%;background:#6C63FF"></div></div>
+        <div class="sc-pct">31% 비중</div>
+      </div>
+      <div class="sc">
+        <div class="sc-head"><span class="dot" style="background:#F472B6"></span><span class="sc-name">쓰윗종각</span></div>
+        <div class="sc-rev" style="color:#F472B6">1,147만</div>
+        <div class="sc-row">
+          <div class="sc-m">일평균 <span>30만</span></div>
+          <div class="sc-m">객단가 <span>22,300원</span></div>
+        </div>
+        <div class="sc-bar"><div class="sc-fill" style="width:25%;background:#F472B6"></div></div>
+        <div class="sc-pct">25% 비중</div>
+      </div>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-lbl">총 매출</div>
+        <div class="kpi-val">4,676만</div>
+        <div class="kpi-sub">3개 매장 합산</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">일평균 매출</div>
+        <div class="kpi-val">123만</div>
+        <div class="kpi-sub up">▲ 12% vs 전주</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">평균 객단가</div>
+        <div class="kpi-val">25,200</div>
+        <div class="kpi-sub">원</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">총 결제건수</div>
+        <div class="kpi-val">1,856</div>
+        <div class="kpi-sub">건</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">방문객 수치</div>
+        <div class="kpi-val">1,856</div>
+        <div class="kpi-sub">결제건수 기준</div>
+      </div>
+    </div>
+
+    <!-- Cumulative Chart -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">📈 누적 매출 추이</div>
+        <div class="tgt-row">
+          목표 <input class="tgt-input" value="5,000만원" readonly>
+          <span class="tgt-pct">93.5% 달성</span>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+      <div class="legend">
+        <div class="leg"><span class="leg-dot" style="background:#F59E0B"></span>전체</div>
+        <div class="leg"><span class="leg-dot" style="background:#10B981"></span>쓰윗성수</div>
+        <div class="leg"><span class="leg-dot" style="background:#6C63FF"></span>성수1층</div>
+        <div class="leg"><span class="leg-dot" style="background:#F472B6"></span>쓰윗종각</div>
+        <div class="leg"><span class="leg-dash" style="border-color:#EF4444"></span>목표</div>
+      </div>
+      <div class="ach">목표 대비 <span>93.5%</span> 달성 &nbsp;·&nbsp; D-24 남음</div>
+    </div>
+
+    <!-- Daily Table -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">📋 일별 매출 기록</div>
+        <div style="font-size:12px;color:var(--text3)">최근 7일 표시</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>날짜</th><th>요일</th><th>매출</th><th>건수</th><th>객단가</th><th>비중</th><th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">2026-06-07</td>
+            <td><span class="badge bd-w">일</span></td>
+            <td class="mono">1,842,000</td><td class="mono">73</td><td class="mono">25,233</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:100%"></div></div><span style="font-size:11px">100%</span></div></td>
+            <td><span class="badge bd-new">최신</span></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-06</td>
+            <td><span class="badge bd-w">토</span></td>
+            <td class="mono">1,654,000</td><td class="mono">68</td><td class="mono">24,323</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div><span style="font-size:11px">90%</span></div></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-05</td>
+            <td><span class="badge bd-w">금</span></td>
+            <td class="mono">1,523,000</td><td class="mono">61</td><td class="mono">24,967</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:83%"></div></div><span style="font-size:11px">83%</span></div></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-04</td>
+            <td><span class="badge bd-n">목</span></td>
+            <td class="mono">987,000</td><td class="mono">42</td><td class="mono">23,500</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:54%"></div></div><span style="font-size:11px">54%</span></div></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-03</td>
+            <td><span class="badge bd-n">수</span></td>
+            <td class="mono">1,102,000</td><td class="mono">45</td><td class="mono">24,489</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:60%"></div></div><span style="font-size:11px">60%</span></div></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-02</td>
+            <td><span class="badge bd-n">화</span></td>
+            <td class="mono">1,034,000</td><td class="mono">43</td><td class="mono">24,047</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:56%"></div></div><span style="font-size:11px">56%</span></div></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="mono">2026-06-01</td>
+            <td><span class="badge bd-n">월</span></td>
+            <td class="mono">923,000</td><td class="mono">39</td><td class="mono">23,667</td>
+            <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:50%"></div></div><span style="font-size:11px">50%</span></div></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const days = 38;
+const startDate = new Date('2026-05-01');
+const labels = [], totalCum = [], ssCum = [], s1fCum = [], jgCum = [], target = [];
+let ssA = 0, s1fA = 0, jgA = 0;
+
+// Seeded pseudo-random for consistent look
+let seed = 42;
+function rand(min, max) {
+  seed = (seed * 9301 + 49297) % 233280;
+  return min + (seed / 233280) * (max - min);
+}
+
+for (let i = 0; i < days; i++) {
+  const d = new Date(startDate);
+  d.setDate(d.getDate() + i);
+  labels.push(`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`);
+  const isWknd = d.getDay() === 0 || d.getDay() === 6;
+  ssA  += isWknd ? rand(58, 75) : rand(40, 58);
+  s1fA += isWknd ? rand(40, 52) : rand(28, 42);
+  jgA  += isWknd ? rand(32, 42) : rand(22, 34);
+  ssCum.push(+ssA.toFixed(0));
+  s1fCum.push(+s1fA.toFixed(0));
+  jgCum.push(+jgA.toFixed(0));
+  totalCum.push(+(ssA + s1fA + jgA).toFixed(0));
+  target.push(+(5000 / (days - 1) * i).toFixed(0));
+}
+
+const cfg = {
+  responsive: true, maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+      titleColor: '#9090A8', bodyColor: '#E8E8F0',
+      callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` }
+    }
+  },
+  scales: {
+    x: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { size: 10 }, maxTicksLimit: 10 } },
+    y: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '만' } }
+  }
+};
+
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: '전체', data: totalCum, borderColor: '#F59E0B', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+      { label: '쓰윗성수', data: ssCum, borderColor: '#10B981', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
+      { label: '성수1층', data: s1fCum, borderColor: '#6C63FF', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
+      { label: '쓰윗종각', data: jgCum, borderColor: '#F472B6', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false },
+      { label: '목표', data: target, borderColor: '#EF4444', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, fill: false },
+    ]
+  },
+  options: cfg
+});
+</script>
+</body>
+</html>

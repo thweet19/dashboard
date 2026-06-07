@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 서비스 계정 키 — 절대 커밋 금지
+*.json.key
+service_account*.json
+thweet-dashboard*.json
+
+# 로컬 엑셀 원본
+data/*.xlsx
+data/*.xls
+data/*.csv
+
+# OS
+.DS_Store
+Thumbs.db

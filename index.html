@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THWEET Admin</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0A0A0F;--surface:#111118;--surface2:#18181F;--surface3:#1E1E28;
+  --border:#2A2A38;--text:#E8E8F0;--text2:#9090A8;--text3:#55556A;
+  --accent:#6C63FF;--green:#10B981;--red:#EF4444;--amber:#F59E0B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* ── Login ── */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
+.login-box{width:320px;text-align:center;}
+.login-logo{font-size:32px;font-weight:700;letter-spacing:.1em;margin-bottom:6px;}
+.login-sub{font-size:12px;color:var(--text3);letter-spacing:.1em;margin-bottom:32px;}
+.login-box input{width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;margin-bottom:10px;outline:none;}
+.login-box input:focus{border-color:var(--accent);}
+.login-box button{width:100%;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;}
+.login-box button:hover{opacity:.9;}
+.login-err{font-size:12px;color:var(--red);margin-top:8px;min-height:16px;}
+
+/* ── App Layout ── */
+#app{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100%;overflow-y:auto;z-index:50;}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Sidebar ── */
+.logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.logo-main{font-size:17px;font-weight:700;letter-spacing:.08em;}
+.logo-sub-txt{font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:3px;}
+.sb-sec{padding:14px 12px 6px;}
+.sb-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;}
+.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-bottom:2px;text-align:left;transition:background .15s;}
+.sb-btn:hover{background:var(--surface2);}
+.sb-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.sb-btn.view-btn.active{border:1px solid var(--border);}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);font-size:11px;}
+.live-row{display:flex;align-items:center;gap:6px;color:var(--green);margin-bottom:3px;}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.upd-txt{color:var(--text3);margin-bottom:10px;}
+.logout-btn{width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;}
+.logout-btn:hover{background:var(--surface2);}
+
+/* ── Topbar ── */
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:8px;background:var(--surface);position:sticky;top:0;z-index:10;}
+.bc{font-size:13px;color:var(--text2);}
+.bc b{color:var(--text);font-weight:600;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.date-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);background:var(--surface3);padding:4px 10px;border-radius:4px;border:1px solid var(--border);}
+.live-badge{font-size:11px;color:var(--green);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:3px 9px;border-radius:4px;font-weight:500;}
+.vtabs{display:none;gap:4px;}
+.vtab{padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;}
+.vtab.active{background:var(--surface3);color:var(--text);}
+
+/* ── Content ── */
+.content{padding:18px 20px 32px;flex:1;}
+
+/* ── Store Cards ── */
+.store-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;}
+.sc:hover{background:var(--surface2);}
+.sc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.sc-name{font-size:13px;font-weight:600;}
+.sc-rev{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;margin-bottom:6px;}
+.sc-row{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+.sc-m{font-size:11px;color:var(--text2);}
+.sc-m span{font-family:'JetBrains Mono',monospace;color:var(--text);}
+.sc-bar{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.sc-fill{height:100%;border-radius:2px;}
+.sc-pct{font-size:11px;color:var(--text2);text-align:right;}
+
+/* ── KPI ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+
+/* ── Section ── */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.sec-title{font-size:14px;font-weight:600;}
+.sec-note{font-size:11px;color:var(--text3);}
+.tgt-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
+.tgt-input{background:var(--surface3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 10px;width:100px;text-align:right;}
+.tgt-input:focus{outline:none;border-color:var(--accent);}
+.tgt-pct{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber);}
+.chart-h260{position:relative;height:260px;}
+.chart-h200{position:relative;height:200px;}
+.chart-h220{position:relative;height:220px;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:10px;}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.leg-dash{width:16px;border-top:2px dashed;}
+.ach{text-align:center;margin-top:8px;font-size:13px;color:var(--text2);}
+.ach b{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber);}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 10px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text2);}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surface2);}
+.mono{font-family:'JetBrains Mono',monospace;color:var(--text);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;}
+.bd-wknd{background:rgba(245,158,11,.15);color:var(--amber);}
+.bd-wkd{background:var(--surface3);color:var(--text2);}
+.bd-new{background:rgba(108,99,255,.15);color:var(--accent);font-size:10px;}
+.bar-cell{display:flex;align-items:center;gap:6px;}
+.mini-bar{flex:1;max-width:60px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.mini-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+/* ── Category Tab 2 ── */
+.two-col{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-bottom:16px;}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.chart-box-title{font-size:13px;font-weight:600;margin-bottom:12px;}
+.donut-wrap{position:relative;height:220px;display:flex;align-items:center;justify-content:center;}
+.donut-center{position:absolute;text-align:center;pointer-events:none;}
+.donut-center .dv{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;}
+.donut-center .dl{font-size:10px;color:var(--text2);}
+.dl-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);}
+.dl-row:last-child{border-bottom:none;}
+.dl-left{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dl-right{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600;}
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.cat-tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.cat-tab:hover{background:var(--surface2);}
+.cat-tab.active{color:#0A0A0F;font-weight:600;border-color:transparent;}
+.cat-tab-dot{width:7px;height:7px;border-radius:50%;}
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.rank-box{background:var(--surface3);border-radius:8px;padding:14px;}
+.rank-title{font-size:12px;font-weight:600;margin-bottom:10px;}
+.rank-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.rank-item:last-child{border-bottom:none;}
+.rank-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;width:18px;text-align:center;}
+.rank-name{flex:1;font-size:12px;color:var(--text2);}
+.rank-bar{flex:1;max-width:70px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.rank-fill{height:100%;border-radius:2px;}
+.rank-cnt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);min-width:34px;text-align:right;}
+
+/* ── Pattern Tab 3 ── */
+.ins-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.ins{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:flex-start;gap:10px;}
+.ins-icon{font-size:20px;line-height:1;}
+.ins-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.ins-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;}
+.ins-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* ── Mobile Bottom Nav ── */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;height:58px;justify-content:space-around;align-items:center;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border:none;background:transparent;color:var(--text3);font-size:10px;font-family:'Inter',sans-serif;cursor:pointer;}
+.bn.active{color:var(--text);}
+.bn-dot{width:8px;height:8px;border-radius:50%;}
+
+/* ── Empty / Error ── */
+.empty{padding:60px 20px;text-align:center;color:var(--text2);}
+.empty-title{font-size:16px;font-weight:600;margin-bottom:8px;}
+.empty-sub{font-size:13px;color:var(--text3);}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .bnav{display:flex;}
+  .vtabs{display:flex;}
+  .content{padding:14px 14px 76px;}
+  .store-cards{grid-template-columns:1fr;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .two-col-eq{grid-template-columns:1fr;}
+  .rank-grid{grid-template-columns:1fr;}
+  .ins-strip{grid-template-columns:repeat(2,1fr);}
+  .date-badge{display:none;}
+}
+@media(max-width:480px){
+  .kpi-strip{grid-template-columns:1fr 1fr;}
+  .ins-strip{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">🥃 THWEET</div>
+    <div class="login-sub">ADMIN DASHBOARD</div>
+    <input type="password" id="pw" placeholder="비밀번호 입력" autocomplete="current-password">
+    <button id="loginBtn">로그인</button>
+    <div id="loginErr" class="login-err"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-main">THWEET</div>
+      <div class="logo-sub-txt">ADMIN DASHBOARD</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-lbl">Workspace</div>
+      <button class="sb-btn store-btn active" data-store="all">
+        <span class="sdot" style="background:#F59E0B"></span>전체 통합
+      </button>
+      <button class="sb-btn store-btn" data-store="seongsu">
+        <span class="sdot" style="background:#10B981"></span>쓰윗성수
+      </button>
+      <button class="sb-btn store-btn" data-store="seongsu1f">
+        <span class="sdot" style="background:#6C63FF"></span>성수1층
+      </button>
+      <button class="sb-btn store-btn" data-store="jonggak">
+        <span class="sdot" style="background:#F472B6"></span>쓰윗종각
+      </button>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-lbl">View</div>
+      <button class="sb-btn view-btn active" data-view="revenue">누적 매출현황</button>
+      <button class="sb-btn view-btn" data-view="category">카테고리 품목분석</button>
+      <button class="sb-btn view-btn" data-view="pattern">패턴분석</button>
+    </div>
+    <div class="sb-foot">
+      <div class="live-row"><span class="pulse"></span>데이터 연결됨</div>
+      <div class="upd-txt" id="updatedAt">--</div>
+      <button class="logout-btn" id="logoutBtn">로그아웃</button>
+    </div>
+  </aside>
+
+  <!-- Mobile bottom nav -->
+  <nav class="bnav">
+    <button class="bn active" data-store="all"><span class="bn-dot" style="background:#F59E0B"></span>전체</button>
+    <button class="bn" data-store="seongsu"><span class="bn-dot" style="background:#10B981"></span>성수</button>
+    <button class="bn" data-store="seongsu1f"><span class="bn-dot" style="background:#6C63FF"></span>1층</button>
+    <button class="bn" data-store="jonggak"><span class="bn-dot" style="background:#F472B6"></span>종각</button>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <span class="bc" id="bc">전체 통합 / <b>누적 매출현황</b></span>
+      <div class="tb-right">
+        <span class="date-badge" id="dateBadge">--</span>
+        <span class="live-badge">● LIVE</span>
+        <div class="vtabs">
+          <button class="vtab active" data-view="revenue">매출</button>
+          <button class="vtab" data-view="category">카테고리</button>
+          <button class="vtab" data-view="pattern">패턴</button>
+        </div>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty"><div class="empty-title">데이터 로딩 중...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG (CI/CD replaces CHANGE_ME) ──────────────────────────────────────
+const PASS = "CHANGE_ME";
+const TARGETS = { all: 5000, seongsu: 2000, seongsu1f: 1500, jonggak: 1200 };
+const STORES = [
+  { id:'all',       name:'전체 통합', color:'#F59E0B' },
+  { id:'seongsu',   name:'쓰윗성수',  color:'#10B981' },
+  { id:'seongsu1f', name:'성수1층',   color:'#6C63FF' },
+  { id:'jonggak',   name:'쓰윗종각',  color:'#F472B6' },
+];
+const ID2NAME = { seongsu:'쓰윗성수', seongsu1f:'성수1층', jonggak:'쓰윗종각' };
+const CAT_COLORS = {
+  '위스키 아이스크림':'#F59E0B','논알콜 젤라또':'#6C63FF','커피':'#10B981',
+  '에이드':'#34D399','디저트':'#F472B6','위스키':'#38BDF8',
+};
+const DOW_KOR = ['월','화','수','목','금','토','일'];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let D = null;
+let activeStore = 'all';
+let activeView  = 'revenue';
+let activeCat   = 0;
+let CH = {};
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const qsa = (sel, root=document) => [...root.querySelectorAll(sel)];
+const fmt = n => {
+  n = Math.round(n);
+  if (n >= 100000000) return (n/100000000).toFixed(1) + '억';
+  if (n >= 10000) return Math.round(n/10000) + '만';
+  return n.toLocaleString();
+};
+const fmtWon = n => fmt(n) + '원';
+
+const getSD = () => {
+  if (activeStore === 'all') return D.by_store.all;
+  const sn = ID2NAME[activeStore];
+  return D.by_store[sn] || D.by_store.all;
+};
+const getDaily = () => {
+  if (activeStore === 'all') return D.daily;
+  const sn = ID2NAME[activeStore];
+  return D.daily.filter(d => d.store === sn);
+};
+const getStoreInfo = () => activeStore === 'all' ? null : D.stores.find(s => s.id === activeStore);
+
+const destroyCharts = () => { Object.values(CH).forEach(c => c.destroy()); CH = {}; };
+
+const chartDefaults = {
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor:'#18181F', borderColor:'#2A2A38', borderWidth:1,
+      titleColor:'#9090A8', bodyColor:'#E8E8F0',
+    },
+  },
+  scales: {
+    x: { grid:{ color:'#1A1A24' }, ticks:{ color:'#55556A', font:{ size:10 } } },
+    y: { grid:{ color:'#1A1A24' }, ticks:{ color:'#55556A', font:{ family:'JetBrains Mono', size:10 } } },
+  },
+};
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+const checkAuth = () => sessionStorage.getItem('th_auth') === '1';
+
+const handleLogin = () => {
+  const pw = $('pw').value.trim();
+  if (pw === PASS) {
+    sessionStorage.setItem('th_auth', '1');
+    startApp();
+  } else {
+    $('loginErr').textContent = '비밀번호가 틀렸습니다';
+    $('pw').value = '';
+  }
+};
+
+// ── DATA ───────────────────────────────────────────────────────────────────
+const loadData = async () => {
+  const res = await fetch('./data/latest.json?t=' + Date.now());
+  if (!res.ok) throw new Error('데이터를 불러올 수 없습니다 (HTTP ' + res.status + ')');
+  return await res.json();
+};
+
+// ── NAV ────────────────────────────────────────────────────────────────────
+const updateNav = () => {
+  qsa('.store-btn, .bn').forEach(b => b.classList.toggle('active', b.dataset.store === activeStore));
+  qsa('.view-btn, .vtab').forEach(b => b.classList.toggle('active', b.dataset.view === activeView));
+  const sc = STORES.find(s => s.id === activeStore);
+  const vn = { revenue:'누적 매출현황', category:'카테고리 품목분석', pattern:'패턴분석' };
+  $('bc').innerHTML = `${sc.name} / <b>${vn[activeView]}</b>`;
+  if (D) $('dateBadge').textContent = `${D.period.start} ~ ${D.period.end}`;
+};
+
+const setStore = sid => { activeStore = sid; activeCat = 0; updateNav(); render(); };
+const setView  = v   => { activeView  = v;               updateNav(); render(); };
+
+// ── RENDER DISPATCH ────────────────────────────────────────────────────────
+const render = () => {
+  destroyCharts();
+  if (!D) { $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div><div class="empty-sub">Google Drive에 파일을 업로드하고 Actions를 실행해주세요</div></div>'; return; }
+  if      (activeView === 'revenue')  renderRevenue();
+  else if (activeView === 'category') renderCategory();
+  else                                renderPattern();
+};
+
+// ── TAB 1: REVENUE ─────────────────────────────────────────────────────────
+const renderRevenue = () => {
+  const daily  = getDaily();
+  const target = TARGETS[activeStore];
+  const si     = getStoreInfo();
+
+  const totalRev  = daily.reduce((s,d) => s + d.revenue, 0);
+  const totalTc   = daily.reduce((s,d) => s + d.tc, 0);
+  const dates     = [...new Set(daily.map(d => d.date))].sort();
+  const nDays     = Math.max(dates.length, 1);
+  const dailyAvg  = Math.round(totalRev / nDays);
+  const atv       = totalTc > 0 ? Math.round(totalRev / totalTc) : 0;
+  const achPct    = target > 0 ? (totalRev / (target * 10000) * 100).toFixed(1) : 0;
+
+  let html = '';
+
+  // 3-store comparison cards (전체 only)
+  if (activeStore === 'all' && D.stores.length > 0) {
+    html += '<div class="store-cards">';
+    D.stores.forEach(s => {
+      html += `<div class="sc" onclick="setStore('${s.id}')">
+        <div class="sc-head"><span class="sdot" style="background:${s.color}"></span><span class="sc-name">${s.name}</span></div>
+        <div class="sc-rev" style="color:${s.color}">${fmt(s.revenue)}원</div>
+        <div class="sc-row">
+          <div class="sc-m">일평균 <span>${fmt(s.daily_avg)}원</span></div>
+          <div class="sc-m">객단가 <span>${s.atv.toLocaleString()}원</span></div>
+        </div>
+        <div class="sc-bar"><div class="sc-fill" style="width:${s.share}%;background:${s.color}"></div></div>
+        <div class="sc-pct">${s.share}% 비중</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // KPI
+  html += `<div class="kpi-strip">
+    <div class="kpi"><div class="kpi-lbl">총 매출</div><div class="kpi-val">${fmt(totalRev)}원</div><div class="kpi-sub">${activeStore === 'all' ? '3개 매장 합산' : si?.name || ''}</div></div>
+    <div class="kpi"><div class="kpi-lbl">일평균 매출</div><div class="kpi-val">${fmt(dailyAvg)}원</div><div class="kpi-sub">${nDays}일 기준</div></div>
+    <div class="kpi"><div class="kpi-lbl">평균 객단가</div><div class="kpi-val">${atv.toLocaleString()}원</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi"><div class="kpi-lbl">총 결제건수</div><div class="kpi-val">${totalTc.toLocaleString()}건</div><div class="kpi-sub">&nbsp;</div></div>
+    <div class="kpi"><div class="kpi-lbl">방문객 수치</div><div class="kpi-val">${totalTc.toLocaleString()}명</div><div class="kpi-sub">결제건수 기준</div></div>
+  </div>`;
+
+  // Cumulative chart
+  const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
+  html += `<div class="section">
+    <div class="sec-head">
+      <div class="sec-title">📈 누적 매출 추이</div>
+      <div class="tgt-row">목표 <input class="tgt-input" id="tgtInput" value="${(target * 10000).toLocaleString()}"> <span class="tgt-pct" id="achPct">${achPct}% 달성</span></div>
+    </div>
+    <div class="chart-h260"><canvas id="lineChart"></canvas></div>
+    <div class="legend" id="lineLegend"></div>
+    <div class="ach" id="achText"></div>
+  </div>`;
+
+  // Table
+  const byDate = {};
+  daily.forEach(d => { if (!byDate[d.date]) byDate[d.date] = { revenue:0, tc:0 }; byDate[d.date].revenue += d.revenue; byDate[d.date].tc += d.tc; });
+  const rows = Object.entries(byDate).sort((a,b) => b[0] < a[0] ? -1 : 1);
+  const maxRev = Math.max(...rows.map(r => r[1].revenue), 1);
+  const DOWS = ['일','월','화','수','목','금','토'];
+
+  html += `<div class="section"><div class="sec-head"><div class="sec-title">📋 일별 매출 기록</div></div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>날짜</th><th>요일</th><th>매출</th><th>건수</th><th>객단가</th><th>비중</th>
+    </tr></thead><tbody>`;
+  rows.forEach(([date, d], i) => {
+    const dow = DOWS[new Date(date).getDay()];
+    const isWknd = dow === '토' || dow === '일' || dow === '금';
+    const pct = (d.revenue / maxRev * 100).toFixed(0);
+    html += `<tr>
+      <td class="mono">${date}${i === 0 ? ' <span class="badge bd-new">최신</span>' : ''}</td>
+      <td><span class="badge ${isWknd ? 'bd-wknd' : 'bd-wkd'}">${dow}</span></td>
+      <td class="mono">${d.revenue.toLocaleString()}</td>
+      <td class="mono">${d.tc}건</td>
+      <td class="mono">${d.tc > 0 ? Math.round(d.revenue/d.tc).toLocaleString() : '-'}원</td>
+      <td><div class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div><span style="font-size:11px">${pct}%</span></div></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div></div>';
+
+  $('content').innerHTML = html;
+
+  // Draw cumulative chart
+  setTimeout(() => {
+    const tgtWon = parseInt(($('tgtInput').value || '0').replace(/,/g, ''));
+    drawLineChart(daily, dates, tgtWon, storeColor);
+    $('tgtInput').addEventListener('change', () => {
+      const v = parseInt($('tgtInput').value.replace(/,/g, '')) || 0;
+      const cur = daily.reduce((s,d) => s + d.revenue, 0);
+      $('achPct').textContent = v > 0 ? (cur/v*100).toFixed(1) + '% 달성' : '';
+      destroyCharts();
+      drawLineChart(daily, dates, v, storeColor);
+    });
+  }, 0);
+};
+
+const drawLineChart = (daily, dates, targetWon, storeColor) => {
+  const ctx = $('lineChart');
+  if (!ctx) return;
+
+  // Cumulative by date
+  const dateRevMap = {};
+  daily.forEach(d => { dateRevMap[d.date] = (dateRevMap[d.date] || 0) + d.revenue; });
+  let cum = 0;
+  const cumData = dates.map(dt => { cum += (dateRevMap[dt] || 0); return Math.round(cum / 10000); });
+
+  const datasets = [
+    { label: '누적 매출', data: cumData, borderColor: storeColor, backgroundColor: storeColor + '18', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
+  ];
+
+  // Add per-store lines for "all" view
+  if (activeStore === 'all') {
+    D.stores.forEach(s => {
+      const sn = s.name;
+      const sMap = {};
+      D.daily.filter(d => d.store === sn).forEach(d => { sMap[d.date] = (sMap[d.date] || 0) + d.revenue; });
+      let sc = 0;
+      const sData = dates.map(dt => { sc += (sMap[dt] || 0); return Math.round(sc / 10000); });
+      datasets.push({ label: s.name, data: sData, borderColor: s.color, borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false });
+    });
+  }
+
+  if (targetWon > 0) {
+    const tgt = Math.round(targetWon / 10000);
+    datasets.push({ label: '목표', data: [0, ...dates.slice(1).map((_, i) => Math.round(tgt / (dates.length - 1) * (i + 1)))], borderColor: '#EF4444', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, fill: false });
+  }
+
+  CH.line = new Chart(ctx, {
+    type: 'line',
+    data: { labels: dates.map(d => d.slice(5)), datasets },
+    options: {
+      ...chartDefaults,
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        ...chartDefaults.plugins,
+        tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` } },
+      },
+      scales: {
+        x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks, maxTicksLimit: 10 } },
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + '만' } },
+      },
+    },
+  });
+
+  // Legend
+  const leg = $('lineLegend');
+  if (leg) {
+    leg.innerHTML = datasets.map(ds => ds.label === '목표'
+      ? `<div class="leg"><span class="leg-dash" style="border-color:#EF4444"></span>${ds.label}</div>`
+      : `<div class="leg"><span class="leg-dot" style="background:${ds.borderColor}"></span>${ds.label}</div>`
+    ).join('');
+  }
+  const achEl = $('achText');
+  if (achEl && targetWon > 0) {
+    const cur = daily.reduce((s,d) => s + d.revenue, 0);
+    achEl.innerHTML = `목표 대비 <b>${(cur/targetWon*100).toFixed(1)}%</b> 달성`;
+  }
+};
+
+// ── TAB 2: CATEGORY ────────────────────────────────────────────────────────
+const renderCategory = () => {
+  const sd = getSD();
+  const cats = sd.categories || [];
+  const products = sd.products || [];
+
+  let html = `<div class="two-col">
+    <div class="chart-box">
+      <div class="chart-box-title">카테고리별 매출 비중</div>
+      <div class="donut-wrap">
+        <canvas id="donutChart"></canvas>
+        <div class="donut-center"><div class="dv">${fmt(cats.reduce((s,c) => s+c.revenue, 0))}원</div><div class="dl">총 매출</div></div>
+      </div>
+      <div id="donutLegend"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-box-title">카테고리별 판매건수</div>
+      <div class="chart-h220"><canvas id="hbarChart"></canvas></div>
+    </div>
+  </div>`;
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">카테고리별 Top 3 · Bottom 3</div></div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="rank-grid" id="rankGrid"></div>
+  </div>`;
+
+  $('content').innerHTML = html;
+
+  setTimeout(() => {
+    // Donut
+    const colors = cats.map(c => CAT_COLORS[c.name] || '#9090A8');
+    CH.donut = new Chart($('donutChart'), {
+      type: 'doughnut',
+      data: { labels: cats.map(c => c.name), datasets: [{ data: cats.map(c => c.pct || c.share), backgroundColor: colors, borderColor:'#111118', borderWidth:3, hoverOffset:5 }] },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{display:false}, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label: c => ` ${c.label}: ${c.parsed}%` } } } },
+    });
+
+    // Donut legend
+    const dl = $('donutLegend');
+    if (dl) dl.innerHTML = cats.map(c => `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${CAT_COLORS[c.name]||'#9090A8'}"></span>${c.name}</div><div class="dl-right">${(c.share||0).toFixed(1)}%</div></div>`).join('');
+
+    // Horizontal bar
+    CH.hbar = new Chart($('hbarChart'), {
+      type: 'bar',
+      data: { labels: cats.map(c => c.name), datasets: [{ data: cats.map(c => c.cnt), backgroundColor: colors.map(c => c + 'CC'), borderColor: colors, borderWidth:1, borderRadius:4 }] },
+      options: { ...chartDefaults, indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label:c=>` ${c.parsed.x.toLocaleString()}건` } } }, scales:{ x:{...chartDefaults.scales.x}, y:{grid:{display:false}, ticks:{color:'#9090A8',font:{size:10}}} } },
+    });
+
+    // Category tabs
+    renderCatTabs(cats, products);
+  }, 0);
+};
+
+const renderCatTabs = (cats, products) => {
+  const tabs = $('catTabs');
+  if (!tabs) return;
+  tabs.innerHTML = cats.map((c, i) => {
+    const col = CAT_COLORS[c.name] || '#9090A8';
+    const isActive = i === activeCat;
+    return `<button class="cat-tab${isActive?' active':''}" style="${isActive?`background:${col};`:''}" onclick="activeCat=${i};renderCatTabs(window._cats,window._products)">
+      <span class="cat-tab-dot" style="background:${col}"></span>${c.name}
+    </button>`;
+  }).join('');
+  window._cats = cats;
+  window._products = products;
+  renderRankGrid(cats[activeCat], products);
+};
+
+const renderRankGrid = (cat, products) => {
+  const rg = $('rankGrid');
+  if (!rg || !cat) return;
+  const col = CAT_COLORS[cat.name] || '#9090A8';
+  const catProds = products.filter(p => p.category === cat.name).sort((a,b) => b.cnt - a.cnt);
+  const top3 = catProds.slice(0, 3);
+  const bot3 = [...catProds].sort((a,b) => a.cnt - b.cnt).slice(0, 3);
+  const maxT = top3[0]?.cnt || 1;
+  const maxB = bot3[bot3.length-1]?.cnt || 1;
+
+  rg.innerHTML = `
+    <div class="rank-box">
+      <div class="rank-title" style="color:${col}">🏆 Top 3 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
+      ${top3.map((p,i) => `<div class="rank-item">
+        <span class="rank-num" style="color:${col}">${i+1}</span>
+        <span class="rank-name">${p.name}</span>
+        <div class="rank-bar"><div class="rank-fill" style="width:${(p.cnt/maxT*100).toFixed(0)}%;background:${col}"></div></div>
+        <span class="rank-cnt">${p.cnt}건</span>
+      </div>`).join('')}
+    </div>
+    <div class="rank-box">
+      <div class="rank-title" style="color:var(--text3)">💀 Bottom 3 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
+      ${bot3.map((p,i) => `<div class="rank-item">
+        <span class="rank-num" style="color:var(--text3)">${i+1}</span>
+        <span class="rank-name">${p.name}</span>
+        <div class="rank-bar"><div class="rank-fill" style="width:${(p.cnt/maxB*100).toFixed(0)}%;background:var(--text3)"></div></div>
+        <span class="rank-cnt">${p.cnt}건</span>
+      </div>`).join('')}
+    </div>`;
+};
+
+// ── TAB 3: PATTERN ─────────────────────────────────────────────────────────
+const renderPattern = () => {
+  const sd = getSD();
+  const dow = sd.dow || [];
+  const hourly = sd.hourly || [];
+
+  const topDow = dow.length ? [...dow].sort((a,b) => b.avg_revenue - a.avg_revenue)[0] : null;
+  const topHour = hourly.length ? [...hourly].sort((a,b) => b.revenue - a.revenue)[0] : null;
+  const botHour = hourly.length ? [...hourly].sort((a,b) => a.revenue - b.revenue)[0] : null;
+
+  let html = `<div class="ins-strip">
+    <div class="ins"><div class="ins-icon">📅</div><div>
+      <div class="ins-lbl">최고 매출 요일</div>
+      <div class="ins-val" style="color:var(--amber)">${topDow ? topDow.name + '요일' : '--'}</div>
+      <div class="ins-sub">평균 <span style="font-family:'JetBrains Mono',monospace">${topDow ? fmt(topDow.avg_revenue) : '--'}</span>원</div>
+    </div></div>
+    <div class="ins"><div class="ins-icon">⏰</div><div>
+      <div class="ins-lbl">피크 타임</div>
+      <div class="ins-val" style="color:var(--green)">${topHour ? '오후 ' + topHour.hour + '시' : '--'}</div>
+      <div class="ins-sub">매출 <span style="font-family:'JetBrains Mono',monospace">${topHour ? fmt(topHour.revenue) : '--'}</span>원</div>
+    </div></div>
+    <div class="ins"><div class="ins-icon">📉</div><div>
+      <div class="ins-lbl">최저 시간대</div>
+      <div class="ins-val" style="color:var(--text2)">${botHour ? botHour.hour + '시' : '--'}</div>
+      <div class="ins-sub">매출 <span style="font-family:'JetBrains Mono',monospace">${botHour ? fmt(botHour.revenue) : '--'}</span>원</div>
+    </div></div>
+  </div>`;
+
+  const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">📅 요일별 평균 매출</div><div class="sec-note">동일 요일 평균</div></div>
+    <div class="chart-h220"><canvas id="dowChart"></canvas></div>
+  </div>`;
+
+  html += `<div class="two-col-eq">
+    <div class="section" style="margin-bottom:0">
+      <div class="sec-head"><div class="sec-title">⏰ 시간대별 매출</div></div>
+      <div class="chart-h200"><canvas id="hourRevChart"></canvas></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <div class="sec-head"><div class="sec-title">🧾 시간대별 결제건수</div></div>
+      <div class="chart-h200"><canvas id="hourTcChart"></canvas></div>
+    </div>
+  </div>`;
+
+  $('content').innerHTML = html;
+
+  setTimeout(() => {
+    // DOW chart
+    const maxDow = Math.max(...dow.map(d => d.avg_revenue), 1);
+    CH.dow = new Chart($('dowChart'), {
+      type: 'bar',
+      data: {
+        labels: dow.map(d => d.name),
+        datasets: [{
+          data: dow.map(d => Math.round(d.avg_revenue / 10000)),
+          backgroundColor: dow.map(d => d.avg_revenue === maxDow ? storeColor : storeColor + '55'),
+          borderColor: dow.map(d => d.avg_revenue === maxDow ? storeColor : storeColor + '88'),
+          borderWidth:1, borderRadius:5,
+        }],
+      },
+      options: { ...chartDefaults, responsive:true, maintainAspectRatio:false,
+        plugins:{ ...chartDefaults.plugins, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label:c=>` 평균 ${c.parsed.y}만원`, afterLabel:(_,i) => ` (${dow[i]?.days||0}일 기준)` } } },
+        scales:{ x:{grid:{display:false}, ticks:{color:'#9090A8',font:{size:12}}}, y:{...chartDefaults.scales.y, ticks:{...chartDefaults.scales.y.ticks, callback:v=>v+'만'}} },
+      },
+    });
+
+    // Hourly revenue
+    const hours = hourly.map(h => h.hour + '시');
+    const maxHR = Math.max(...hourly.map(h => h.revenue), 1);
+    CH.hr = new Chart($('hourRevChart'), {
+      type: 'bar',
+      data: { labels: hours, datasets: [{ data: hourly.map(h => Math.round(h.revenue/10000)), backgroundColor: hourly.map(h => h.revenue===maxHR?storeColor:storeColor+'55'), borderColor: hourly.map(h => h.revenue===maxHR?storeColor:storeColor+'88'), borderWidth:1, borderRadius:4 }] },
+      options: { ...chartDefaults, responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{label:c=>` ${c.parsed.y}만원`} } }, scales:{ x:{grid:{display:false},ticks:{color:'#55556A',font:{size:9}}}, y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v+'만'}} } },
+    });
+
+    // Hourly TC
+    const maxTC = Math.max(...hourly.map(h => h.tc), 1);
+    CH.tc = new Chart($('hourTcChart'), {
+      type: 'bar',
+      data: { labels: hours, datasets: [{ data: hourly.map(h => h.tc), backgroundColor: hourly.map(h => h.tc===maxTC?'#6C63FF':'#6C63FF55'), borderColor: hourly.map(h => h.tc===maxTC?'#6C63FF':'#6C63FF88'), borderWidth:1, borderRadius:4 }] },
+      options: { ...chartDefaults, responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{label:c=>` ${c.parsed.y}건`} } }, scales:{ x:{grid:{display:false},ticks:{color:'#55556A',font:{size:9}}}, y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v+'건'}} } },
+    });
+  }, 0);
+};
+
+// ── APP START ──────────────────────────────────────────────────────────────
+const startApp = async () => {
+  $('login').style.display = 'none';
+  $('app').style.display = '';
+
+  try {
+    D = await loadData();
+    if (D.updated_at) $('updatedAt').textContent = '업데이트: ' + D.updated_at.slice(0, 16).replace('T', ' ');
+    updateNav();
+    render();
+  } catch (e) {
+    $('content').innerHTML = `<div class="empty"><div class="empty-title">데이터 로드 실패</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+};
+
+// ── EVENT BINDING ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Login
+  $('loginBtn').onclick = handleLogin;
+  $('pw').onkeydown = e => { if (e.key === 'Enter') handleLogin(); };
+
+  // Navigation
+  document.addEventListener('click', e => {
+    const sb = e.target.closest('[data-store]');
+    if (sb) { setStore(sb.dataset.store); return; }
+    const vb = e.target.closest('[data-view]');
+    if (vb) { setView(vb.dataset.view); return; }
+  });
+
+  // Logout
+  $('logoutBtn').onclick = () => { sessionStorage.removeItem('th_auth'); location.reload(); };
+
+  // Auto-login if session exists
+  if (checkAuth()) startApp();
+});
+</script>
+</body>
+</html>

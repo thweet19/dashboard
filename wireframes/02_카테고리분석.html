@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[WF-02] THWEET — 카테고리 품목분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0A0A0F; --surface:#111118; --surface2:#18181F; --surface3:#1E1E28;
+  --border:#2A2A38; --text:#E8E8F0; --text2:#9090A8; --text3:#55556A;
+  --accent:#6C63FF; --green:#10B981; --red:#EF4444; --amber:#F59E0B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100%;overflow-y:auto;}
+.logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.logo-main{font-size:17px;font-weight:700;letter-spacing:.08em;}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:3px;}
+.sb-sec{padding:14px 12px 6px;}
+.sb-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;}
+.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-bottom:2px;text-align:left;transition:background .15s;}
+.sb-btn:hover{background:var(--surface2);}
+.sb-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.sb-btn.view-active{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);font-size:11px;}
+.live-row{display:flex;align-items:center;gap:6px;color:var(--green);margin-bottom:3px;}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;background:var(--surface);position:sticky;top:0;z-index:10;}
+.bc{font-size:13px;color:var(--text2);}
+.bc b{color:var(--text);font-weight:600;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.date-badge{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);background:var(--surface3);padding:4px 10px;border-radius:4px;border:1px solid var(--border);}
+.live-badge{font-size:11px;color:var(--green);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:3px 9px;border-radius:4px;font-weight:500;}
+.content{padding:20px 24px 32px;flex:1;}
+
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:14px;font-weight:600;}
+
+/* Top 2-col charts */
+.charts-row{display:grid;grid-template-columns:300px 1fr;gap:18px;margin-bottom:18px;}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.chart-box-title{font-size:13px;font-weight:600;margin-bottom:14px;}
+.donut-wrap{position:relative;height:240px;display:flex;align-items:center;justify-content:center;}
+.donut-center{position:absolute;text-align:center;pointer-events:none;}
+.donut-center .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--text);}
+.donut-center .lbl{font-size:11px;color:var(--text2);}
+.donut-legend{margin-top:12px;}
+.dl-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);}
+.dl-item:last-child{border-bottom:none;}
+.dl-left{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dl-right{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);font-weight:600;}
+.bar-wrap{position:relative;height:280px;}
+
+/* Category filter tabs */
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.cat-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.cat-tab:hover{background:var(--surface2);}
+.cat-tab.active{border-color:transparent;color:#0A0A0F;font-weight:600;}
+.cat-dot{width:7px;height:7px;border-radius:50%;}
+
+/* Top/Bottom */
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.rank-box{background:var(--surface3);border-radius:8px;padding:16px;}
+.rank-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.rank-item:last-child{border-bottom:none;}
+.rank-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;width:20px;text-align:center;}
+.rank-name{flex:1;font-size:13px;color:var(--text2);}
+.rank-bar{flex:1;max-width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.rank-fill{height:100%;border-radius:2px;}
+.rank-cnt{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);text-align:right;min-width:36px;}
+
+.wf-tag{position:fixed;top:12px;right:16px;z-index:999;background:rgba(108,99,255,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;padding:5px 12px;border-radius:6px;font-weight:500;}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .charts-row{grid-template-columns:1fr;}
+  .rank-grid{grid-template-columns:1fr;}
+  .bnav{display:flex!important;}
+  .content{padding-bottom:76px;}
+  .wf-tag{display:none;}
+}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;height:60px;justify-content:space-around;align-items:center;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border:none;background:transparent;color:var(--text3);font-size:10px;font-family:'Inter',sans-serif;cursor:pointer;}
+.bn.active{color:var(--text);}
+.bn-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<div class="wf-tag">WF-02 · 카테고리 품목분석</div>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-main">THWEET</div>
+    <div class="logo-sub">ADMIN DASHBOARD</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Workspace</div>
+    <button class="sb-btn active"><span class="dot" style="background:#F59E0B"></span>전체 통합</button>
+    <button class="sb-btn"><span class="dot" style="background:#10B981"></span>쓰윗성수</button>
+    <button class="sb-btn"><span class="dot" style="background:#6C63FF"></span>성수1층</button>
+    <button class="sb-btn"><span class="dot" style="background:#F472B6"></span>쓰윗종각</button>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">View</div>
+    <button class="sb-btn">누적 매출현황</button>
+    <button class="sb-btn view-active">카테고리 품목분석</button>
+    <button class="sb-btn">패턴분석</button>
+  </div>
+  <div class="sb-foot">
+    <div class="live-row"><span class="pulse"></span>데이터 연결됨</div>
+    <div style="color:var(--text3)">최근 업데이트 오전 10:00</div>
+  </div>
+</aside>
+
+<nav class="bnav">
+  <button class="bn active"><span class="bn-dot" style="background:#F59E0B"></span>전체</button>
+  <button class="bn"><span class="bn-dot" style="background:#10B981"></span>성수</button>
+  <button class="bn"><span class="bn-dot" style="background:#6C63FF"></span>1층</button>
+  <button class="bn"><span class="bn-dot" style="background:#F472B6"></span>종각</button>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <span class="bc">전체 통합 / <b>카테고리 품목분석</b></span>
+    <div class="tb-right">
+      <span class="date-badge">2026-05-01 ~ 2026-06-07</span>
+      <span class="live-badge">● LIVE</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Donut -->
+      <div class="chart-box">
+        <div class="chart-box-title">카테고리별 매출 비중</div>
+        <div class="donut-wrap">
+          <canvas id="donutChart"></canvas>
+          <div class="donut-center">
+            <div class="val">4,676만</div>
+            <div class="lbl">총 매출</div>
+          </div>
+        </div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+
+      <!-- Horizontal bar -->
+      <div class="chart-box">
+        <div class="chart-box-title">카테고리별 판매건수</div>
+        <div class="bar-wrap"><canvas id="hbarChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Category filter + Top/Bottom -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">카테고리별 Top 3 · Bottom 3</div>
+      </div>
+
+      <div class="cat-tabs" id="catTabs"></div>
+
+      <div class="rank-grid" id="rankGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CATS = [
+  { name: '위스키 아이스크림', color: '#F59E0B', pct: 38, cnt: 842,
+    top: [['바베드 카라멜',324],['스모키 초코벡',267],['메이커스 바닐라',182]],
+    bot: [['골든 오렌지',23],['싱글 포레스트',26],['시퍼피드',31]] },
+  { name: '논알콜 젤라또', color: '#6C63FF', pct: 22, cnt: 534,
+    top: [['얼그레이 하드아이스',198],['플레인 하드아이스',165],['시퀀스 바닐라',120]],
+    bot: [['레드빈 소르베',18],['라임 소르베',22],['피스타치오',29]] },
+  { name: '커피', color: '#10B981', pct: 15, cnt: 298,
+    top: [['아메리카노',145],['카프라라떼',87],['에스프레소',42]],
+    bot: [['콜드브루',18],['플랫화이트',21],['더치',24]] },
+  { name: '에이드', color: '#34D399', pct: 8, cnt: 187,
+    top: [['체리 밤 석류',78],['오렌지 밤 에이드',65],['자몽 에이드',44]],
+    bot: [['레몬 에이드',12],['청포도 에이드',15],['키위 에이드',19]] },
+  { name: '디저트', color: '#F472B6', pct: 12, cnt: 245,
+    top: [['얼그레이 휘낭시에',108],['플레인 휘낭시에',93],['커피아몬드 휘낭시에',89]],
+    bot: [['휘낭시에 선물세트',12],['올리브 치즈 휘낭시에',15],['레몬 휘낭시에',19]] },
+  { name: '위스키', color: '#38BDF8', pct: 5, cnt: 98,
+    top: [['글렌 피딕 12Y',38],['달모어 12Y',32],['발베니 14Y',18]],
+    bot: [['오반 14Y',4],['라가불린 16Y',5],['카듀 12Y',7]] },
+];
+
+// Donut
+const donutCtx = document.getElementById('donutChart').getContext('2d');
+new Chart(donutCtx, {
+  type: 'doughnut',
+  data: {
+    labels: CATS.map(c => c.name),
+    datasets: [{
+      data: CATS.map(c => c.pct),
+      backgroundColor: CATS.map(c => c.color),
+      borderColor: '#111118',
+      borderWidth: 3,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+        titleColor: '#9090A8', bodyColor: '#E8E8F0',
+        callbacks: { label: c => ` ${c.label}: ${c.parsed}%` }
+      }
+    }
+  }
+});
+
+// Donut legend
+const dl = document.getElementById('donutLegend');
+CATS.forEach(c => {
+  dl.innerHTML += `<div class="dl-item">
+    <div class="dl-left"><span class="dl-dot" style="background:${c.color}"></span>${c.name}</div>
+    <div class="dl-right">${c.pct}%</div>
+  </div>`;
+});
+
+// Horizontal bar
+const hbarCtx = document.getElementById('hbarChart').getContext('2d');
+new Chart(hbarCtx, {
+  type: 'bar',
+  data: {
+    labels: CATS.map(c => c.name),
+    datasets: [{
+      data: CATS.map(c => c.cnt),
+      backgroundColor: CATS.map(c => c.color + 'CC'),
+      borderColor: CATS.map(c => c.color),
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+        titleColor: '#9090A8', bodyColor: '#E8E8F0',
+        callbacks: { label: c => ` ${c.parsed.x.toLocaleString()}건` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { family: 'JetBrains Mono', size: 10 } } },
+      y: { grid: { display: false }, ticks: { color: '#9090A8', font: { size: 11 } } }
+    }
+  }
+});
+
+// Category tabs & rank
+let activeCat = 0;
+
+function renderCatTabs() {
+  const el = document.getElementById('catTabs');
+  el.innerHTML = '';
+  CATS.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (i === activeCat ? ' active' : '');
+    if (i === activeCat) btn.style.background = c.color;
+    btn.innerHTML = `<span class="cat-dot" style="background:${c.color}"></span>${c.name}`;
+    btn.onclick = () => { activeCat = i; renderCatTabs(); renderRank(); };
+    el.appendChild(btn);
+  });
+}
+
+function renderRank() {
+  const c = CATS[activeCat];
+  const maxTop = c.top[0][1];
+  const maxBot = c.bot[2][1];
+  document.getElementById('rankGrid').innerHTML = `
+    <div class="rank-box">
+      <div class="rank-title" style="color:${c.color}">🏆 Top 3 &nbsp;<span style="color:var(--text3);font-weight:400">${c.name}</span></div>
+      ${c.top.map((item, i) => `
+        <div class="rank-item">
+          <span class="rank-num" style="color:${c.color}">${i+1}</span>
+          <span class="rank-name">${item[0]}</span>
+          <div class="rank-bar"><div class="rank-fill" style="width:${(item[1]/maxTop*100).toFixed(0)}%;background:${c.color}"></div></div>
+          <span class="rank-cnt">${item[1]}건</span>
+        </div>`).join('')}
+    </div>
+    <div class="rank-box">
+      <div class="rank-title" style="color:var(--text3)">💀 Bottom 3 &nbsp;<span style="color:var(--text3);font-weight:400">${c.name}</span></div>
+      ${c.bot.map((item, i) => `
+        <div class="rank-item">
+          <span class="rank-num" style="color:var(--text3)">${i+1}</span>
+          <span class="rank-name">${item[0]}</span>
+          <div class="rank-bar"><div class="rank-fill" style="width:${(item[1]/maxBot*100).toFixed(0)}%;background:var(--text3)"></div></div>
+          <span class="rank-cnt">${item[1]}건</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+renderCatTabs();
+renderRank();
+</script>
+</body>
+</html>

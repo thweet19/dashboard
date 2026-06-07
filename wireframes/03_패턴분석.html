@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[WF-03] THWEET — 패턴분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0A0A0F; --surface:#111118; --surface2:#18181F; --surface3:#1E1E28;
+  --border:#2A2A38; --text:#E8E8F0; --text2:#9090A8; --text3:#55556A;
+  --accent:#6C63FF; --green:#10B981; --red:#EF4444; --amber:#F59E0B;
+  --store:#10B981;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100%;overflow-y:auto;}
+.logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.logo-main{font-size:17px;font-weight:700;letter-spacing:.08em;}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:3px;}
+.sb-sec{padding:14px 12px 6px;}
+.sb-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;}
+.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin-bottom:2px;text-align:left;transition:background .15s;}
+.sb-btn:hover{background:var(--surface2);}
+.sb-btn.active{background:var(--surface3);color:var(--text);font-weight:500;}
+.sb-btn.view-active{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border);font-size:11px;}
+.live-row{display:flex;align-items:center;gap:6px;color:var(--green);margin-bottom:3px;}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;background:var(--surface);position:sticky;top:0;z-index:10;}
+.bc{font-size:13px;color:var(--text2);}
+.bc b{color:var(--text);font-weight:600;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.date-badge{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);background:var(--surface3);padding:4px 10px;border-radius:4px;border:1px solid var(--border);}
+.store-badge{font-size:12px;font-weight:600;padding:4px 12px;border-radius:4px;border:1px solid rgba(16,185,129,.4);color:var(--green);background:rgba(16,185,129,.1);}
+.content{padding:20px 24px 32px;flex:1;}
+
+/* Insight strip */
+.insight-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.ins{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;}
+.ins-icon{font-size:22px;line-height:1;}
+.ins-body{}
+.ins-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.ins-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;color:var(--text);}
+.ins-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.hl{color:var(--green)!important;}
+
+/* Section */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:14px;font-weight:600;}
+.sec-note{font-size:11px;color:var(--text3);}
+.chart-wrap{position:relative;}
+.h240{height:240px;}
+.h200{height:200px;}
+
+/* 2-col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+
+/* Day highlight */
+.day-highlight{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.dh{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+
+.wf-tag{position:fixed;top:12px;right:16px;z-index:999;background:rgba(108,99,255,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;padding:5px 12px;border-radius:6px;font-weight:500;}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .insight-strip{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .bnav{display:flex!important;}
+  .content{padding-bottom:76px;}
+  .wf-tag{display:none;}
+}
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;height:60px;justify-content:space-around;align-items:center;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border:none;background:transparent;color:var(--text3);font-size:10px;font-family:'Inter',sans-serif;cursor:pointer;}
+.bn.active{color:var(--text);}
+.bn-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<div class="wf-tag">WF-03 · 패턴분석</div>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-main">THWEET</div>
+    <div class="logo-sub">ADMIN DASHBOARD</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Workspace</div>
+    <button class="sb-btn"><span class="dot" style="background:#F59E0B"></span>전체 통합</button>
+    <button class="sb-btn active"><span class="dot" style="background:#10B981"></span>쓰윗성수</button>
+    <button class="sb-btn"><span class="dot" style="background:#6C63FF"></span>성수1층</button>
+    <button class="sb-btn"><span class="dot" style="background:#F472B6"></span>쓰윗종각</button>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">View</div>
+    <button class="sb-btn">누적 매출현황</button>
+    <button class="sb-btn">카테고리 품목분석</button>
+    <button class="sb-btn view-active">패턴분석</button>
+  </div>
+  <div class="sb-foot">
+    <div class="live-row"><span class="pulse"></span>데이터 연결됨</div>
+    <div style="color:var(--text3)">최근 업데이트 오전 10:00</div>
+  </div>
+</aside>
+
+<nav class="bnav">
+  <button class="bn"><span class="bn-dot" style="background:#F59E0B"></span>전체</button>
+  <button class="bn active"><span class="bn-dot" style="background:#10B981"></span>성수</button>
+  <button class="bn"><span class="bn-dot" style="background:#6C63FF"></span>1층</button>
+  <button class="bn"><span class="bn-dot" style="background:#F472B6"></span>종각</button>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <span class="bc">쓰윗성수 / <b>패턴분석</b></span>
+    <div class="tb-right">
+      <span class="store-badge">● 쓰윗성수</span>
+      <span class="date-badge">2026-05-01 ~ 2026-06-07</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Insight strip -->
+    <div class="insight-strip">
+      <div class="ins">
+        <div class="ins-icon">📅</div>
+        <div class="ins-body">
+          <div class="ins-lbl">최고 매출 요일</div>
+          <div class="ins-val" style="color:var(--amber)">토요일</div>
+          <div class="ins-sub">평균 <span style="font-family:'JetBrains Mono',monospace">105만</span>원</div>
+        </div>
+      </div>
+      <div class="ins">
+        <div class="ins-icon">⏰</div>
+        <div class="ins-body">
+          <div class="ins-lbl">피크 타임</div>
+          <div class="ins-val" style="color:var(--green)">오후 7시</div>
+          <div class="ins-sub">전체 매출의 <span style="font-family:'JetBrains Mono',monospace">14.2%</span></div>
+        </div>
+      </div>
+      <div class="ins">
+        <div class="ins-icon">📉</div>
+        <div class="ins-body">
+          <div class="ins-lbl">최저 매출 시간대</div>
+          <div class="ins-val" style="color:var(--text2)">오전 11시</div>
+          <div class="ins-sub">전체 매출의 <span style="font-family:'JetBrains Mono',monospace">3.1%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day of week chart -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title">📅 요일별 평균 매출</div>
+        <div class="sec-note">기간 내 동일 요일 평균</div>
+      </div>
+      <div class="chart-wrap h240"><canvas id="dowChart"></canvas></div>
+      <div class="day-highlight" id="dayHighlight"></div>
+    </div>
+
+    <!-- Hourly charts -->
+    <div class="two-col">
+      <div class="section" style="margin-bottom:0">
+        <div class="sec-head">
+          <div class="sec-title">⏰ 시간대별 누적 매출</div>
+          <div class="sec-note">만원</div>
+        </div>
+        <div class="chart-wrap h200"><canvas id="hourRevChart"></canvas></div>
+      </div>
+      <div class="section" style="margin-bottom:0">
+        <div class="sec-head">
+          <div class="sec-title">🧾 시간대별 결제건수</div>
+          <div class="sec-note">건</div>
+        </div>
+        <div class="chart-wrap h200"><canvas id="hourTcChart"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const STORE_COLOR = '#10B981';
+const hours = ['11시','12시','13시','14시','15시','16시','17시','18시','19시','20시','21시','22시'];
+
+// Day of week data (만원)
+const DOW_LABELS = ['월','화','수','목','금','토','일'];
+const DOW_DATA   = [52, 58, 61, 67, 89, 105, 92];
+const DOW_DAYS   = [6, 6, 6, 6, 5, 5, 4]; // 보유 데이터 일수
+
+const maxDow = Math.max(...DOW_DATA);
+
+// Day chart
+const dowCtx = document.getElementById('dowChart').getContext('2d');
+new Chart(dowCtx, {
+  type: 'bar',
+  data: {
+    labels: DOW_LABELS,
+    datasets: [{
+      data: DOW_DATA,
+      backgroundColor: DOW_DATA.map(v => v === maxDow ? STORE_COLOR : STORE_COLOR + '55'),
+      borderColor: DOW_DATA.map(v => v === maxDow ? STORE_COLOR : STORE_COLOR + '88'),
+      borderWidth: 1,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+        titleColor: '#9090A8', bodyColor: '#E8E8F0',
+        callbacks: {
+          label: c => ` 평균 ${c.parsed.y}만원`,
+          afterLabel: (c) => ` (${DOW_DAYS[c.dataIndex]}일 기준)`,
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#9090A8', font: { size: 12 } } },
+      y: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '만' } }
+    }
+  }
+});
+
+// Day highlight badges
+const dhl = document.getElementById('dayHighlight');
+const dayColors = ['#9090A8','#9090A8','#9090A8','#9090A8','#F59E0B','#EF4444','#F59E0B'];
+DOW_LABELS.forEach((d, i) => {
+  dhl.innerHTML += `<span class="dh" style="background:${dayColors[i]}22;color:${dayColors[i]};border:1px solid ${dayColors[i]}44">${d} ${DOW_DATA[i]}만</span>`;
+});
+
+// Hourly revenue data (만원)
+const hourRev = [28, 112, 152, 138, 105, 92, 108, 158, 185, 172, 140, 72];
+const maxHR = Math.max(...hourRev);
+
+const hrCtx = document.getElementById('hourRevChart').getContext('2d');
+new Chart(hrCtx, {
+  type: 'bar',
+  data: {
+    labels: hours,
+    datasets: [{
+      data: hourRev,
+      backgroundColor: hourRev.map(v => v === maxHR ? STORE_COLOR : STORE_COLOR + '55'),
+      borderColor: hourRev.map(v => v === maxHR ? STORE_COLOR : STORE_COLOR + '88'),
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+        titleColor: '#9090A8', bodyColor: '#E8E8F0',
+        callbacks: { label: c => ` ${c.parsed.y}만원` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#55556A', font: { size: 9 } } },
+      y: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { family: 'JetBrains Mono', size: 9 }, callback: v => v + '만' } }
+    }
+  }
+});
+
+// Hourly TC data
+const hourTc = [11, 45, 62, 56, 43, 38, 44, 64, 75, 70, 57, 29];
+const maxTC = Math.max(...hourTc);
+
+const tcCtx = document.getElementById('hourTcChart').getContext('2d');
+new Chart(tcCtx, {
+  type: 'bar',
+  data: {
+    labels: hours,
+    datasets: [{
+      data: hourTc,
+      backgroundColor: hourTc.map(v => v === maxTC ? '#6C63FF' : '#6C63FF55'),
+      borderColor: hourTc.map(v => v === maxTC ? '#6C63FF' : '#6C63FF88'),
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181F', borderColor: '#2A2A38', borderWidth: 1,
+        titleColor: '#9090A8', bodyColor: '#E8E8F0',
+        callbacks: { label: c => ` ${c.parsed.y}건` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#55556A', font: { size: 9 } } },
+      y: { grid: { color: '#1A1A24' }, ticks: { color: '#55556A', font: { family: 'JetBrains Mono', size: 9 }, callback: v => v + '건' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
