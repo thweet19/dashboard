@@ -243,12 +243,15 @@ def main():
             buf = decrypt_if_needed(buf)
             try:
                 pay, items, detail = parse_pos_file(buf, fname)
+                print(f'     📊 결제합계: {len(pay)}행, 상품: {len(items)}행, 상세: {len(detail)}행')
                 all_pay.append(pay)
                 all_items.append(items)
                 if not detail.empty:
                     all_detail.append(detail)
             except Exception as e:
+                import traceback
                 print(f'     ❌ {e}')
+                print(traceback.format_exc())
 
     if not all_pay:
         raise RuntimeError('처리된 데이터가 없습니다.')
