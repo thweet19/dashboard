@@ -52,25 +52,31 @@ def decrypt_if_needed(buf):
     try:
         office_file = msoffcrypto.OfficeFile(buf)
         if office_file.is_encrypted():
+            print(f'     🔐 암호화 파일 복호화 중 (비밀번호: {EXCEL_PASSWORD})...')
             office_file.load_key(password=EXCEL_PASSWORD)
             decrypted = io.BytesIO()
             office_file.decrypt(decrypted)
             decrypted.seek(0)
+            print(f'     ✅ 복호화 완료 ({decrypted.getbuffer().nbytes:,} bytes)')
             return decrypted
-    except Exception:
-        pass
+        else:
+            print(f'     ℹ️  암호화 없음')
+    except Exception as e:
+        print(f'     ❌ 복호화 실패: {e}')
     buf.seek(0)
     return buf
 
 
 def read_excel(buf, **kwargs):
+    last_err = None
     for engine in ['openpyxl', 'xlrd', 'calamine']:
         try:
             buf.seek(0)
             return pd.read_excel(buf, engine=engine, **kwargs)
-        except Exception:
+        except Exception as e:
+            last_err = e
             continue
-    raise ValueError('엑셀 파일을 읽을 수 없습니다.')
+    raise ValueError(f'엑셀 파일을 읽을 수 없습니다. ({last_err})')
 
 
 def parse_pos_file(buf, store_name):
