@@ -3,10 +3,13 @@ import io
 import json
 from datetime import datetime
 
+import msoffcrypto
 import pandas as pd
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+
+EXCEL_PASSWORD = '1989'
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
@@ -39,6 +42,23 @@ def download_file(service, file_id):
     done = False
     while not done:
         _, done = dl.next_chunk()
+    buf.seek(0)
+    return buf
+
+
+def decrypt_if_needed(buf):
+    """비밀번호가 걸린 엑셀이면 복호화해서 반환, 아니면 원본 반환"""
+    buf.seek(0)
+    try:
+        office_file = msoffcrypto.OfficeFile(buf)
+        if office_file.is_encrypted():
+            office_file.load_key(password=EXCEL_PASSWORD)
+            decrypted = io.BytesIO()
+            office_file.decrypt(decrypted)
+            decrypted.seek(0)
+            return decrypted
+    except Exception:
+        pass
     buf.seek(0)
     return buf
 
@@ -214,6 +234,7 @@ def main():
         for f in excels:
             print(f'     ↳ {f["name"]}')
             buf = download_file(service, f['id'])
+            buf = decrypt_if_needed(buf)
             try:
                 pay, items, detail = parse_pos_file(buf, fname)
                 all_pay.append(pay)
