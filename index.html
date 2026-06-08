@@ -581,6 +581,13 @@ const getWeekLabel = monDate => {
   return `${d.getMonth()+1}/${d.getDate()}~${sun.getMonth()+1}/${sun.getDate()}`;
 };
 
+const getWeekName = monDate => {
+  const d = new Date(monDate);
+  const month = d.getMonth() + 1;
+  const weekNum = Math.ceil(d.getDate() / 7);
+  return `${month}월 ${weekNum}주차`;
+};
+
 const buildWeekly = daily => {
   const map = {};
   daily.forEach(d => {
@@ -616,10 +623,10 @@ const renderWeekly = () => {
   const wowColor = wow === null ? 'var(--text2)' : wow >= 0 ? 'var(--green)' : 'var(--red)';
 
   let html = `<div class="kpi-strip">
-    <div class="kpi"><div class="kpi-lbl">이번 주 매출</div><div class="kpi-val">${fmt(thisW.revenue)}원</div><div class="kpi-sub">${getWeekLabel(weeks[n-1][0])}</div></div>
+    <div class="kpi"><div class="kpi-lbl">이번 주 매출</div><div class="kpi-val">${fmt(thisW.revenue)}원</div><div class="kpi-sub">${getWeekName(weeks[n-1][0])} · ${getWeekLabel(weeks[n-1][0])}</div></div>
     <div class="kpi"><div class="kpi-lbl">전주 대비</div><div class="kpi-val" style="color:${wowColor}">${wow !== null ? (wow >= 0 ? '+' : '') + wow.toFixed(1) + '%' : '--'}</div><div class="kpi-sub">${wowAbs !== null ? (wowAbs >= 0 ? '+' : '') + fmt(wowAbs) + '원' : '비교 데이터 없음'}</div></div>
     <div class="kpi"><div class="kpi-lbl">주 평균 매출</div><div class="kpi-val">${fmt(weekAvg)}원</div><div class="kpi-sub">${n}주 기준</div></div>
-    <div class="kpi"><div class="kpi-lbl">최고 매출 주차</div><div class="kpi-val" style="color:var(--amber)">${fmt(bestWeek[1].revenue)}원</div><div class="kpi-sub">${getWeekLabel(bestWeek[0])}</div></div>
+    <div class="kpi"><div class="kpi-lbl">최고 매출 주차</div><div class="kpi-val" style="color:var(--amber)">${fmt(bestWeek[1].revenue)}원</div><div class="kpi-sub">${getWeekName(bestWeek[0])} · ${getWeekLabel(bestWeek[0])}</div></div>
     <div class="kpi"><div class="kpi-lbl">이번 주 결제건수</div><div class="kpi-val">${thisW.tc.toLocaleString()}건</div><div class="kpi-sub">객단가 ${thisW.tc > 0 ? Math.round(thisW.revenue/thisW.tc).toLocaleString() : '--'}원</div></div>
   </div>`;
 
@@ -632,7 +639,7 @@ const renderWeekly = () => {
   html += `<div class="section">
     <div class="sec-head"><div class="sec-title">📋 주차별 상세 현황</div></div>
     <div class="tbl-wrap"><table><thead><tr>
-      <th>주차</th><th>매출</th><th>결제건수</th><th>객단가</th><th>전주 대비</th>
+      <th>주차명</th><th>기간</th><th>매출</th><th>결제건수</th><th>객단가</th><th>전주 대비</th>
     </tr></thead><tbody>`;
 
   weeks.forEach(([mon, wdata], i) => {
@@ -643,7 +650,8 @@ const renderWeekly = () => {
     const pctColor = pct === null ? 'var(--text3)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
     const pctLabel = pct !== null ? (pct >= 0 ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(1) + '%' : '--';
     html += `<tr>
-      <td class="mono">${getWeekLabel(mon)}${isLatest ? ' <span class="badge bd-new">이번주</span>' : ''}${isBest ? ' <span class="badge" style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px">최고</span>' : ''}</td>
+      <td style="font-weight:600;color:var(--text)">${getWeekName(mon)}${isLatest ? ' <span class="badge bd-new">이번주</span>' : ''}${isBest ? ' <span class="badge" style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px">최고</span>' : ''}</td>
+      <td class="mono" style="color:var(--text3);font-size:12px">${getWeekLabel(mon)}</td>
       <td class="mono">${wdata.revenue.toLocaleString()}</td>
       <td class="mono">${wdata.tc}건</td>
       <td class="mono">${wdata.tc > 0 ? Math.round(wdata.revenue/wdata.tc).toLocaleString() : '-'}원</td>
@@ -655,7 +663,7 @@ const renderWeekly = () => {
   $('content').innerHTML = html;
 
   setTimeout(() => {
-    const labels = weeks.map(([mon]) => getWeekLabel(mon));
+    const labels = weeks.map(([mon]) => getWeekName(mon));
     let datasets = [];
 
     if (activeStore === 'all') {
