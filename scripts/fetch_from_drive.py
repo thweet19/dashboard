@@ -153,27 +153,42 @@ def parse_pos_file(buf, store_name):
         print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
 
     # ── 상품 데이터 파싱 공통 함수 ────────────────────────────────────
+    import re as _re
+
+    def extract_date(val):
+        """날짜 or 범위 문자열("2026-05-01 ~ 2026-05-31")에서 첫 날짜 추출"""
+        if pd.isna(val):
+            return pd.NaT
+        s = str(val).strip()
+        m = _re.search(r'(\d{4}[-./]\d{1,2}[-./]\d{1,2})', s)
+        if m:
+            return pd.to_datetime(m.group(1), errors='coerce')
+        return pd.to_datetime(s, errors='coerce')
+
     def parse_items_df(df):
         print(f'     📋 상품시트 컬럼: {list(df.columns[:8])}')
-        # 컬럼명 정규화: 앞뒤 공백 제거
         df.columns = [str(c).strip() for c in df.columns]
-        name_col = next((c for c in df.columns if '상품명' in c or '상품 명' in c), None)
+        name_col  = next((c for c in df.columns if '상품명' in c), None)
         if not name_col:
             print(f'     ⚠️ 상품명 컬럼 없음')
             return pd.DataFrame()
         df = df.dropna(subset=[name_col]).copy()
+        # 날짜 컬럼: 기간/날짜/일자/주문기준 등
+        date_col  = next((c for c in df.columns if any(k in c for k in ['기간', '날짜', '일자', '주문기준', 'date'])), None)
+        cat_col   = next((c for c in df.columns if '카테고리' in c), None)
+        cnt_col   = next((c for c in df.columns if any(k in c for k in ['판매건수', '건수', '수량'])), None)
         sales_col = next((c for c in df.columns if '실 판매' in c or '실판매' in c), None)
         if sales_col is None:
+            sales_col = next((c for c in df.columns if '판매금액' in c or '매출' in c), None)
+        if sales_col is None:
             sales_col = next((c for c in df.columns if '가격' in c), None)
-        date_col  = next((c for c in df.columns if '기간' in c or '날짜' in c or 'date' in c.lower()), None)
-        cat_col   = next((c for c in df.columns if '카테고리' in c), None)
-        cnt_col   = next((c for c in df.columns if '판매건수' in c or '건수' in c), None)
         print(f'     → name={name_col}, date={date_col}, cat={cat_col}, cnt={cnt_col}, sales={sales_col}')
         if not all([date_col, cat_col, cnt_col, sales_col]):
             return pd.DataFrame()
         out = df[[date_col, name_col, cat_col, cnt_col, sales_col]].copy()
         out.columns = ['date', 'product', 'category', 'cnt', 'actual_price']
-        out['date'] = pd.to_datetime(out['date'], errors='coerce')
+        # 날짜 범위 문자열 포함 대응
+        out['date'] = out['date'].apply(extract_date)
         out = out.dropna(subset=['date'])
         out['cnt'] = pd.to_numeric(out['cnt'], errors='coerce').fillna(0)
         out['actual_price'] = pd.to_numeric(out['actual_price'], errors='coerce').fillna(0)
