@@ -152,96 +152,26 @@ def parse_pos_file(buf, store_name):
         df_pay = daily
         print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
 
-    # ── 상품 데이터 파싱 공통 함수 ────────────────────────────────────
-    import re as _re
-
-    def extract_date(val):
-        """날짜/범위문자열/Excel숫자 모두 처리"""
-        if pd.isna(val):
-            return pd.NaT
-        if isinstance(val, (pd.Timestamp,)):
-            return val
-        # 이미 datetime이면 바로 반환
-        try:
-            import datetime as _dt
-            if isinstance(val, (_dt.datetime, _dt.date)):
-                return pd.Timestamp(val)
-        except Exception:
-            pass
-        s = str(val).strip()
-        # 날짜 문자열 or 범위("2026-05-01 ~ 2026-05-31")에서 첫 날짜 추출
-        m = _re.search(r'(\d{4}[-./]\d{1,2}[-./]\d{1,2})', s)
-        if m:
-            return pd.to_datetime(m.group(1), errors='coerce')
-        return pd.to_datetime(s, errors='coerce')
-
-    def parse_items_df(df, fallback_date=None):
-        print(f'     📋 상품시트 컬럼: {list(df.columns[:10])}')
-        df.columns = [str(c).strip() for c in df.columns]
-        name_col  = next((c for c in df.columns if '상품명' in c), None)
-        if not name_col:
-            return pd.DataFrame()
-        df = df.dropna(subset=[name_col]).copy()
-        date_col  = next((c for c in df.columns if any(k in c for k in ['기간', '날짜', '일자', '주문기준', 'date'])), None)
-        cat_col   = next((c for c in df.columns if '카테고리' in c), None)
-        cnt_col   = next((c for c in df.columns if any(k in c for k in ['판매건수', '건수', '수량'])), None)
-        sales_col = next((c for c in df.columns if '실 판매' in c or '실판매' in c), None)
-        if not sales_col:
-            sales_col = next((c for c in df.columns if '판매금액' in c or '매출' in c), None)
-        if not sales_col:
-            sales_col = next((c for c in df.columns if '가격' in c), None)
-        print(f'     → date={date_col}, cat={cat_col}, cnt={cnt_col}, sales={sales_col}')
-        if not all([cat_col, cnt_col, sales_col]):
-            return pd.DataFrame()
-        out = df[[date_col, name_col, cat_col, cnt_col, sales_col]].copy() if date_col else df[[name_col, cat_col, cnt_col, sales_col]].copy()
-        if date_col:
-            out.columns = ['date', 'product', 'category', 'cnt', 'actual_price']
-            out['date'] = out['date'].apply(extract_date)
-            # 날짜 파싱 실패 시 fallback_date로 채움 (데이터 손실 방지)
-            if out['date'].isna().all() and fallback_date is not None:
-                print(f'     ⚠️ 날짜 파싱 전부 실패 → {fallback_date.date()} 로 대체')
-                out['date'] = fallback_date
-            out = out.dropna(subset=['date'])
-        else:
-            out.columns = ['product', 'category', 'cnt', 'actual_price']
-            out['date'] = fallback_date or pd.Timestamp('2020-01-01')
-        out['cnt'] = pd.to_numeric(out['cnt'], errors='coerce').fillna(0)
-        out['actual_price'] = pd.to_numeric(out['actual_price'], errors='coerce').fillna(0)
-        out['store'] = store_name
-        return out
-
-    # ── 상품 주문 합계 (skiprows 없이 / 있이 둘 다 시도) ───────────────
-    # fallback_date: 날짜 파싱 실패 시 사용할 기간 시작일
-    fb_date = df_pay['date'].min() if len(df_pay) > 0 else None
-
+    # ── 상품 주문 상세내역 RAW 데이터로 파싱 (모든 파일 공통) ──────────
+    # 컬럼: A(0)주문기준일자, B(1)결제상태, F(5)상품명, H(7)카테고리, L(11)수량, M(12)상품가격
     df_items = pd.DataFrame()
-    for skip in [None, [1]]:
-        try:
-            kw = dict(sheet_name=sheet_items, header=0)
-            if skip: kw['skiprows'] = skip
-            _items = read_excel(buf, **kw)
-            parsed = parse_items_df(_items, fallback_date=fb_date)
-            if len(parsed) > 0:
-                df_items = parsed
-                print(f'     ✅ 상품합계 시트: {len(df_items)}행 (skiprows={skip})')
-                break
-        except Exception as e:
-            print(f'     ⚠️ 상품합계 파싱 실패(skip={skip}): {e}')
-
-    # 상품합계도 0행이면 상품 주문 상세내역 시도
-    if len(df_items) == 0:
-        for skip in [None, [1]]:
-            try:
-                kw = dict(sheet_name=sheet_item_detail, header=0)
-                if skip: kw['skiprows'] = skip
-                _idet = read_excel(buf, **kw)
-                parsed = parse_items_df(_idet, fallback_date=fb_date)
-                if len(parsed) > 0:
-                    df_items = parsed
-                    print(f'     ✅ 상품상세 시트 대체: {len(df_items)}행 (skiprows={skip})')
-                    break
-            except Exception:
-                pass
+    try:
+        _raw = read_excel(buf, sheet_name=sheet_item_detail, header=0, skiprows=[1],
+                          usecols=[0, 1, 5, 7, 11, 12])
+        _raw.columns = ['date', 'status', 'product', 'category', 'cnt', 'price']
+        _raw = _raw[_raw['status'].astype(str).str.strip() == '완료'].copy()
+        _raw['date'] = pd.to_datetime(_raw['date'], errors='coerce')
+        _raw = _raw.dropna(subset=['date', 'product', 'category'])
+        _raw['cnt'] = pd.to_numeric(_raw['cnt'], errors='coerce').fillna(1)
+        _raw['price'] = pd.to_numeric(_raw['price'], errors='coerce').fillna(0)
+        _raw['actual_price'] = _raw['price'] * _raw['cnt']
+        _raw['store'] = store_name
+        df_items = _raw[['date', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
+        print(f'     ✅ 상품 상세내역: {len(df_items)}행')
+    except Exception as e:
+        import traceback
+        print(f'     ❌ 상품 상세내역 파싱 실패: {e}')
+        print(traceback.format_exc())
 
     print(f'     📊 최종: 결제합계={len(df_pay)}행, 상품={len(df_items)}행, 상세={len(df_detail)}행')
     return df_pay, df_items, df_detail
