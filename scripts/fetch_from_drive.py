@@ -109,10 +109,16 @@ def parse_pos_file(buf, store_name):
     sheet_detail = find_sheet(sheets, ['결제', '상세']) or '결제 상세내역'
     print(f'     → 결제합계={sheet_pay}, 상품={sheet_items}, 상세={sheet_detail}')
 
+    # 전체 컬럼 먼저 확인
+    df_raw = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1])
+    print(f'     📊 결제합계 컬럼({len(df_raw)}행): {list(df_raw.columns[:6])}')
+    print(f'     📊 첫 행 샘플: {df_raw.iloc[0].tolist()[:6] if len(df_raw) > 0 else "데이터없음"}')
+
     df_pay = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1], usecols=[0, 1, 3])
     df_pay.columns = ['date', 'revenue', 'tc']
     df_pay = df_pay.dropna(subset=['date']).copy()
     df_pay['date'] = pd.to_datetime(df_pay['date'], errors='coerce')
+    print(f'     📊 날짜 파싱 후: {len(df_pay)}행, 첫 날짜={df_pay["date"].iloc[0] if len(df_pay) > 0 else "없음"}')
     df_pay = df_pay.dropna(subset=['date'])
     df_pay['revenue'] = pd.to_numeric(df_pay['revenue'], errors='coerce').fillna(0)
     df_pay['tc'] = pd.to_numeric(df_pay['tc'], errors='coerce').fillna(0)
