@@ -422,11 +422,11 @@ const renderRevenue = () => {
     <div class="kpi"><div class="kpi-lbl">방문객 수치</div><div class="kpi-val">${totalTc.toLocaleString()}명</div><div class="kpi-sub">결제건수 기준</div></div>
   </div>`;
 
-  // Cumulative chart
+  // Daily bar chart
   const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
   html += `<div class="section">
     <div class="sec-head">
-      <div class="sec-title">📈 누적 매출 추이</div>
+      <div class="sec-title">📊 일별 매출 현황</div>
       <div class="tgt-row">목표 <input class="tgt-input" id="tgtInput" value="${(target * 10000).toLocaleString()}"> <span class="tgt-pct" id="achPct">${achPct}% 달성</span></div>
     </div>
     <div class="chart-h260"><canvas id="lineChart"></canvas></div>
@@ -480,35 +480,53 @@ const drawLineChart = (daily, dates, targetWon, storeColor) => {
   const ctx = $('lineChart');
   if (!ctx) return;
 
-  // Cumulative by date
-  const dateRevMap = {};
-  daily.forEach(d => { dateRevMap[d.date] = (dateRevMap[d.date] || 0) + d.revenue; });
-  let cum = 0;
-  const cumData = dates.map(dt => { cum += (dateRevMap[dt] || 0); return Math.round(cum / 10000); });
+  let datasets = [];
 
-  const datasets = [
-    { label: '누적 매출', data: cumData, borderColor: storeColor, backgroundColor: storeColor + '18', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
-  ];
-
-  // Add per-store lines for "all" view
   if (activeStore === 'all') {
+    // 전체 통합: 매장별 스택 막대
     D.stores.forEach(s => {
-      const sn = s.name;
       const sMap = {};
-      D.daily.filter(d => d.store === sn).forEach(d => { sMap[d.date] = (sMap[d.date] || 0) + d.revenue; });
-      let sc = 0;
-      const sData = dates.map(dt => { sc += (sMap[dt] || 0); return Math.round(sc / 10000); });
-      datasets.push({ label: s.name, data: sData, borderColor: s.color, borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false });
+      D.daily.filter(d => d.store === s.name).forEach(d => { sMap[d.date] = (sMap[d.date] || 0) + d.revenue; });
+      datasets.push({
+        label: s.name,
+        data: dates.map(dt => Math.round((sMap[dt] || 0) / 10000)),
+        backgroundColor: s.color + 'CC',
+        borderColor: s.color,
+        borderWidth: 0,
+        stack: 'daily',
+      });
+    });
+  } else {
+    // 단일 매장: 단색 막대
+    const dateRevMap = {};
+    daily.forEach(d => { dateRevMap[d.date] = (dateRevMap[d.date] || 0) + d.revenue; });
+    datasets.push({
+      label: '일별 매출',
+      data: dates.map(dt => Math.round((dateRevMap[dt] || 0) / 10000)),
+      backgroundColor: storeColor + 'CC',
+      borderColor: storeColor,
+      borderWidth: 0,
+      stack: 'daily',
     });
   }
 
+  // 일평균 목표선 (총 목표 / 일수)
   if (targetWon > 0) {
-    const tgt = Math.round(targetWon / 10000);
-    datasets.push({ label: '목표', data: [0, ...dates.slice(1).map((_, i) => Math.round(tgt / (dates.length - 1) * (i + 1)))], borderColor: '#EF4444', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, fill: false });
+    const dailyTgt = Math.round(targetWon / dates.length / 10000);
+    datasets.push({
+      label: '일평균 목표',
+      data: dates.map(() => dailyTgt),
+      type: 'line',
+      borderColor: '#EF4444',
+      borderWidth: 1.5,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      fill: false,
+    });
   }
 
   CH.line = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: { labels: dates.map(d => d.slice(5)), datasets },
     options: {
       ...chartDefaults,
@@ -516,11 +534,14 @@ const drawLineChart = (daily, dates, targetWon, storeColor) => {
       interaction: { mode: 'index', intersect: false },
       plugins: {
         ...chartDefaults.plugins,
-        tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` } },
+        tooltip: {
+          ...chartDefaults.plugins.tooltip,
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` },
+        },
       },
       scales: {
-        x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks, maxTicksLimit: 10 } },
-        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + '만' } },
+        x: { ...chartDefaults.scales.x, stacked: true, ticks: { ...chartDefaults.scales.x.ticks, maxTicksLimit: 12 } },
+        y: { ...chartDefaults.scales.y, stacked: true, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + '만' } },
       },
     },
   });
@@ -528,7 +549,7 @@ const drawLineChart = (daily, dates, targetWon, storeColor) => {
   // Legend
   const leg = $('lineLegend');
   if (leg) {
-    leg.innerHTML = datasets.map(ds => ds.label === '목표'
+    leg.innerHTML = datasets.map(ds => ds.label === '일평균 목표'
       ? `<div class="leg"><span class="leg-dash" style="border-color:#EF4444"></span>${ds.label}</div>`
       : `<div class="leg"><span class="leg-dot" style="background:${ds.borderColor}"></span>${ds.label}</div>`
     ).join('');
