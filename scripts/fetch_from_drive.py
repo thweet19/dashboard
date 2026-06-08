@@ -31,7 +31,7 @@ def get_service():
 def list_folder(service, folder_id):
     res = service.files().list(
         q=f"'{folder_id}' in parents and trashed=false",
-        fields='files(id, name, mimeType)', pageSize=200,
+        fields='files(id, name, mimeType, modifiedTime)', pageSize=200,
     ).execute()
     return res.get('files', [])
 
@@ -339,6 +339,7 @@ def main():
     folder_id = os.environ['GOOGLE_DRIVE_FOLDER_ID']
 
     all_pay, all_items, all_detail = [], [], []
+    file_order = 0
 
     for folder in list_folder(service, folder_id):
         if folder['mimeType'] != 'application/vnd.google-apps.folder':
@@ -348,20 +349,28 @@ def main():
             print(f'  ⚠️  알 수 없는 폴더: {fname}')
             continue
 
-        excels = [f for f in list_folder(service, folder['id'])
-                  if f['name'].lower().endswith(('.xlsx', '.xls'))]
+        # modifiedTime 오름차순 정렬 → 오래된 파일 먼저, 최신 파일 나중 (최신이 dedup에서 이김)
+        excels = sorted(
+            [f for f in list_folder(service, folder['id']) if f['name'].lower().endswith(('.xlsx', '.xls'))],
+            key=lambda f: f.get('modifiedTime', '')
+        )
         if not excels:
             print(f'  ⚠️  {fname}: 엑셀 없음')
             continue
 
-        print(f'  📂 {fname}: {len(excels)}개 파일')
+        print(f'  📂 {fname}: {len(excels)}개 파일 (업로드순 처리)')
         for f in excels:
-            print(f'     ↳ {f["name"]}')
+            print(f'     ↳ {f["name"]} (수정: {f.get("modifiedTime","?")[:10]})')
             buf = download_file(service, f['id'])
             buf = decrypt_if_needed(buf)
             try:
                 pay, items, detail = parse_pos_file(buf, fname)
                 print(f'     📊 결제합계: {len(pay)}행, 상품: {len(items)}행, 상세: {len(detail)}행')
+                if not pay.empty:
+                    pay['_forder'] = file_order
+                if not items.empty:
+                    items['_forder'] = file_order
+                file_order += 1
                 all_pay.append(pay)
                 all_items.append(items)
                 if not detail.empty:
@@ -378,9 +387,13 @@ def main():
     df_items  = pd.concat(all_items, ignore_index=True)
     df_detail = pd.concat(all_detail, ignore_index=True) if all_detail else pd.DataFrame()
 
-    # 중복 날짜 제거 (동일 날짜 파일 중복 업로드 시 최신 우선)
-    df_pay   = df_pay.sort_values('date').drop_duplicates(subset=['date', 'store'], keep='last')
-    df_items = df_items.sort_values('date').drop_duplicates(subset=['date', 'product', 'store'], keep='last')
+    # 최신 업로드 파일 우선 덮어쓰기 (_forder 높을수록 최신)
+    if '_forder' not in df_pay.columns:
+        df_pay['_forder'] = 0
+    if '_forder' not in df_items.columns:
+        df_items['_forder'] = 0
+    df_pay   = df_pay.sort_values(['date', '_forder']).drop_duplicates(subset=['date', 'store'], keep='last').drop(columns='_forder')
+    df_items = df_items.sort_values(['date', '_forder']).drop_duplicates(subset=['date', 'product', 'store'], keep='last').drop(columns='_forder')
 
     print('📊 지표 계산 중...')
     result = compute_metrics(df_pay, df_items, df_detail)
