@@ -233,10 +233,10 @@ tbody tr:hover td{background:var(--surface2);}
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">View</div>
-      <button class="sb-btn view-btn active" data-view="revenue">누적 매출현황</button>
-      <button class="sb-btn view-btn" data-view="weekly">주차별 분석</button>
-      <button class="sb-btn view-btn" data-view="category">카테고리 품목분석</button>
-      <button class="sb-btn view-btn" data-view="pattern">패턴분석</button>
+      <button class="sb-btn view-btn active" data-view="revenue">일별 매출분석</button>
+      <button class="sb-btn view-btn" data-view="weekly">주차별 매출분석</button>
+      <button class="sb-btn view-btn" data-view="category">카테고리 분석</button>
+      <button class="sb-btn view-btn" data-view="pattern">결제패턴 분석</button>
     </div>
     <div class="sb-foot">
       <div class="live-row"><span class="pulse"></span>데이터 연결됨</div>
@@ -261,7 +261,7 @@ tbody tr:hover td{background:var(--surface2);}
         <span class="date-badge" id="dateBadge">--</span>
         <span class="live-badge">● LIVE</span>
         <div class="vtabs">
-          <button class="vtab active" data-view="revenue">매출</button>
+          <button class="vtab active" data-view="revenue">일별</button>
           <button class="vtab" data-view="weekly">주차별</button>
           <button class="vtab" data-view="category">카테고리</button>
           <button class="vtab" data-view="pattern">패턴</button>
@@ -378,7 +378,7 @@ const updateNav = () => {
   qsa('.store-btn, .bn').forEach(b => b.classList.toggle('active', b.dataset.store === activeStore));
   qsa('.view-btn, .vtab').forEach(b => b.classList.toggle('active', b.dataset.view === activeView));
   const sc = STORES.find(s => s.id === activeStore);
-  const vn = { revenue:'누적 매출현황', weekly:'주차별 분석', category:'카테고리 품목분석', pattern:'패턴분석' };
+  const vn = { revenue:'일별 매출분석', weekly:'주차별 매출분석', category:'카테고리 분석', pattern:'결제패턴 분석' };
   $('bc').innerHTML = `${sc.name} / <b>${vn[activeView]}</b>`;
   if (D) {
     if (activeMonth && activeView !== 'weekly') {
