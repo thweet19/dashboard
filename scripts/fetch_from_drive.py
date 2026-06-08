@@ -100,49 +100,102 @@ def find_sheet(sheet_names, keywords):
 
 
 def parse_pos_file(buf, store_name):
-    # 시트 이름 확인
     sheets = get_sheet_names(buf)
     print(f'     📋 시트 목록: {sheets}')
 
-    sheet_pay   = find_sheet(sheets, ['결제', '합계']) or '결제 합계'
-    sheet_items = find_sheet(sheets, ['상품']) or '상품 주문 합계'
+    sheet_pay    = find_sheet(sheets, ['결제', '합계']) or '결제 합계'
+    sheet_items  = find_sheet(sheets, ['상품', '주문', '합계']) or '상품 주문 합계'
     sheet_detail = find_sheet(sheets, ['결제', '상세']) or '결제 상세내역'
+    sheet_item_detail = find_sheet(sheets, ['상품', '주문', '상세']) or '상품 주문 상세내역'
     print(f'     → 결제합계={sheet_pay}, 상품={sheet_items}, 상세={sheet_detail}')
 
-    # 전체 컬럼 먼저 확인
-    df_raw = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1])
-    print(f'     📊 결제합계 컬럼({len(df_raw)}행): {list(df_raw.columns[:6])}')
-    print(f'     📊 첫 행 샘플: {df_raw.iloc[0].tolist()[:6] if len(df_raw) > 0 else "데이터없음"}')
-
-    df_pay = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1], usecols=[0, 1, 3])
-    df_pay.columns = ['date', 'revenue', 'tc']
-    df_pay = df_pay.dropna(subset=['date']).copy()
-    df_pay['date'] = pd.to_datetime(df_pay['date'], errors='coerce')
-    print(f'     📊 날짜 파싱 후: {len(df_pay)}행, 첫 날짜={df_pay["date"].iloc[0] if len(df_pay) > 0 else "없음"}')
-    df_pay = df_pay.dropna(subset=['date'])
-    df_pay['revenue'] = pd.to_numeric(df_pay['revenue'], errors='coerce').fillna(0)
-    df_pay['tc'] = pd.to_numeric(df_pay['tc'], errors='coerce').fillna(0)
-    df_pay['store'] = store_name
-
-    df_items = read_excel(buf, sheet_name=sheet_items, header=0)
-    df_items = df_items.dropna(subset=['상품명']).copy()
-    sales_col = next((c for c in df_items.columns if '실 판매' in str(c)), '상품가격')
-    df_items = df_items[['기간', '상품명', '카테고리', '판매건수', sales_col]].copy()
-    df_items.columns = ['date', 'product', 'category', 'cnt', 'actual_price']
-    df_items['date'] = pd.to_datetime(df_items['date'], errors='coerce')
-    df_items = df_items.dropna(subset=['date'])
-    df_items['cnt'] = pd.to_numeric(df_items['cnt'], errors='coerce').fillna(0)
-    df_items['actual_price'] = pd.to_numeric(df_items['actual_price'], errors='coerce').fillna(0)
-    df_items['store'] = store_name
-
+    # ── 결제 상세내역 (모든 파일에서 잘 읽힘) ──────────────────────────
+    df_detail = pd.DataFrame()
     try:
         df_detail = read_excel(buf, sheet_name=sheet_detail, header=0, skiprows=[1], usecols=[0, 1, 5, 7, 9])
         df_detail.columns = ['date', 'time', 'revenue', 'method', 'status']
         df_detail = df_detail.dropna(subset=['date']).copy()
+        df_detail['revenue'] = pd.to_numeric(df_detail['revenue'], errors='coerce').fillna(0)
         df_detail['store'] = store_name
-    except Exception:
-        df_detail = pd.DataFrame()
+    except Exception as e:
+        print(f'     ⚠️ 상세내역 파싱 실패: {e}')
 
+    # ── 결제 합계 시트 시도 ───────────────────────────────────────────
+    df_pay = pd.DataFrame()
+    try:
+        _tmp = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1], usecols=[0, 1, 3])
+        _tmp.columns = ['date', 'revenue', 'tc']
+        _tmp = _tmp.dropna(subset=['date']).copy()
+        _tmp['date'] = pd.to_datetime(_tmp['date'], errors='coerce')
+        _tmp = _tmp.dropna(subset=['date'])
+        _tmp['revenue'] = pd.to_numeric(_tmp['revenue'], errors='coerce').fillna(0)
+        _tmp['tc'] = pd.to_numeric(_tmp['tc'], errors='coerce').fillna(0)
+        _tmp['store'] = store_name
+        if len(_tmp) > 0:
+            df_pay = _tmp
+            print(f'     ✅ 결제합계 시트: {len(df_pay)}행')
+    except Exception:
+        pass
+
+    # ── 결제합계 0행이면 상세내역에서 일별 집계 ──────────────────────
+    if len(df_pay) == 0 and not df_detail.empty:
+        print(f'     ⚠️ 결제합계 0행 → 상세내역 기반 일별 집계')
+        df_a = df_detail.copy()
+        if 'status' in df_a.columns:
+            df_a = df_a[df_a['status'] == '승인']
+        df_a['_date'] = pd.to_datetime(df_a['date'], errors='coerce').dt.normalize()
+        daily = df_a.groupby('_date').agg(
+            revenue=('revenue', 'sum'),
+            tc=('revenue', 'count'),
+        ).reset_index().rename(columns={'_date': 'date'})
+        daily['store'] = store_name
+        df_pay = daily
+        print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
+
+    # ── 상품 주문 합계 ────────────────────────────────────────────────
+    df_items = pd.DataFrame()
+    try:
+        _items = read_excel(buf, sheet_name=sheet_items, header=0)
+        if '상품명' in _items.columns:
+            _items = _items.dropna(subset=['상품명']).copy()
+            sales_col = next((c for c in _items.columns if '실 판매' in str(c)), None)
+            if sales_col is None:
+                sales_col = next((c for c in _items.columns if '가격' in str(c)), '상품가격')
+            _items = _items[['기간', '상품명', '카테고리', '판매건수', sales_col]].copy()
+            _items.columns = ['date', 'product', 'category', 'cnt', 'actual_price']
+            _items['date'] = pd.to_datetime(_items['date'], errors='coerce')
+            _items = _items.dropna(subset=['date'])
+            _items['cnt'] = pd.to_numeric(_items['cnt'], errors='coerce').fillna(0)
+            _items['actual_price'] = pd.to_numeric(_items['actual_price'], errors='coerce').fillna(0)
+            _items['store'] = store_name
+            if len(_items) > 0:
+                df_items = _items
+                print(f'     ✅ 상품합계 시트: {len(df_items)}행')
+    except Exception as e:
+        print(f'     ⚠️ 상품합계 파싱 실패: {e}')
+
+    # 상품합계도 0행이면 상품 상세내역 시도
+    if len(df_items) == 0:
+        try:
+            _idet = read_excel(buf, sheet_name=sheet_item_detail, header=0)
+            if '상품명' in _idet.columns:
+                _idet = _idet.dropna(subset=['상품명']).copy()
+                sales_col = next((c for c in _idet.columns if '실 판매' in str(c) or '가격' in str(c)), None)
+                if sales_col and '기간' in _idet.columns and '카테고리' in _idet.columns and '판매건수' in _idet.columns:
+                    _idet = _idet[['기간', '상품명', '카테고리', '판매건수', sales_col]].copy()
+                    _idet.columns = ['date', 'product', 'category', 'cnt', 'actual_price']
+                    _idet['date'] = pd.to_datetime(_idet['date'], errors='coerce')
+                    _idet = _idet.dropna(subset=['date'])
+                    _idet['cnt'] = pd.to_numeric(_idet['cnt'], errors='coerce').fillna(0)
+                    _idet['actual_price'] = pd.to_numeric(_idet['actual_price'], errors='coerce').fillna(0)
+                    _idet['store'] = store_name
+                    if len(_idet) > 0:
+                        df_items = _idet
+                        print(f'     ✅ 상품상세 시트 대체: {len(df_items)}행')
+        except Exception:
+            pass
+
+    print(f'     📊 최종: 결제합계={len(df_pay)}행, 상품={len(df_items)}행, 상세={len(df_detail)}행')
     return df_pay, df_items, df_detail
 
 
