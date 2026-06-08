@@ -79,8 +79,37 @@ def read_excel(buf, **kwargs):
     raise ValueError(f'엑셀 파일을 읽을 수 없습니다. ({last_err})')
 
 
+def get_sheet_names(buf):
+    """엑셀 파일의 시트 이름 목록 반환"""
+    for engine in ['openpyxl', 'xlrd', 'calamine']:
+        try:
+            buf.seek(0)
+            xf = pd.ExcelFile(buf, engine=engine)
+            return xf.sheet_names
+        except Exception:
+            continue
+    return []
+
+
+def find_sheet(sheet_names, keywords):
+    """키워드를 포함하는 시트 이름 탐색 (대소문자/공백 무시)"""
+    for name in sheet_names:
+        if all(k in name for k in keywords):
+            return name
+    return None
+
+
 def parse_pos_file(buf, store_name):
-    df_pay = read_excel(buf, sheet_name='결제 합계', header=0, skiprows=[1], usecols=[0, 1, 3])
+    # 시트 이름 확인
+    sheets = get_sheet_names(buf)
+    print(f'     📋 시트 목록: {sheets}')
+
+    sheet_pay   = find_sheet(sheets, ['결제', '합계']) or '결제 합계'
+    sheet_items = find_sheet(sheets, ['상품']) or '상품 주문 합계'
+    sheet_detail = find_sheet(sheets, ['결제', '상세']) or '결제 상세내역'
+    print(f'     → 결제합계={sheet_pay}, 상품={sheet_items}, 상세={sheet_detail}')
+
+    df_pay = read_excel(buf, sheet_name=sheet_pay, header=0, skiprows=[1], usecols=[0, 1, 3])
     df_pay.columns = ['date', 'revenue', 'tc']
     df_pay = df_pay.dropna(subset=['date']).copy()
     df_pay['date'] = pd.to_datetime(df_pay['date'], errors='coerce')
@@ -89,7 +118,7 @@ def parse_pos_file(buf, store_name):
     df_pay['tc'] = pd.to_numeric(df_pay['tc'], errors='coerce').fillna(0)
     df_pay['store'] = store_name
 
-    df_items = read_excel(buf, sheet_name='상품 주문 합계', header=0)
+    df_items = read_excel(buf, sheet_name=sheet_items, header=0)
     df_items = df_items.dropna(subset=['상품명']).copy()
     sales_col = next((c for c in df_items.columns if '실 판매' in str(c)), '상품가격')
     df_items = df_items[['기간', '상품명', '카테고리', '판매건수', sales_col]].copy()
@@ -101,7 +130,7 @@ def parse_pos_file(buf, store_name):
     df_items['store'] = store_name
 
     try:
-        df_detail = read_excel(buf, sheet_name='결제 상세내역', header=0, skiprows=[1], usecols=[0, 1, 5, 7, 9])
+        df_detail = read_excel(buf, sheet_name=sheet_detail, header=0, skiprows=[1], usecols=[0, 1, 5, 7, 9])
         df_detail.columns = ['date', 'time', 'revenue', 'method', 'status']
         df_detail = df_detail.dropna(subset=['date']).copy()
         df_detail['store'] = store_name
