@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-08T15:46:14",
+  "updated_at": "2026-06-08T16:04:50",
   "period": {
     "start": "2026-05-01",
     "end": "2026-05-31"
@@ -2672,6 +2672,2186 @@
           "days": 5
         }
       ]
+    }
+  },
+  "by_month": {
+    "2026-05": {
+      "stores": [
+        {
+          "id": "seongsu",
+          "name": "쓰윗성수",
+          "color": "#10B981",
+          "revenue": 35618690,
+          "tc": 1189,
+          "daily_avg": 1148990,
+          "atv": 29957,
+          "share": 49.2
+        },
+        {
+          "id": "seongsu1f",
+          "name": "성수1층",
+          "color": "#6C63FF",
+          "revenue": 6936100,
+          "tc": 471,
+          "daily_avg": 223745,
+          "atv": 14726,
+          "share": 9.6
+        },
+        {
+          "id": "jonggak",
+          "name": "쓰윗종각",
+          "color": "#F472B6",
+          "revenue": 29783830,
+          "tc": 1216,
+          "daily_avg": 992794,
+          "atv": 24493,
+          "share": 41.2
+        }
+      ],
+      "by_store": {
+        "all": {
+          "categories": [
+            {
+              "name": "위스키 아이스크림",
+              "revenue": 7822500,
+              "cnt": 615,
+              "share": 36.4
+            },
+            {
+              "name": "논알콜 젤라또",
+              "revenue": 2813000,
+              "cnt": 302,
+              "share": 13.1
+            },
+            {
+              "name": "커피",
+              "revenue": 2612500,
+              "cnt": 300,
+              "share": 12.2
+            },
+            {
+              "name": "에이드",
+              "revenue": 1450500,
+              "cnt": 150,
+              "share": 6.7
+            },
+            {
+              "name": "디저트",
+              "revenue": 1804500,
+              "cnt": 229,
+              "share": 8.4
+            },
+            {
+              "name": "위스키",
+              "revenue": 4987000,
+              "cnt": 183,
+              "share": 23.2
+            },
+            {
+              "name": "기타",
+              "revenue": 2000,
+              "cnt": 1,
+              "share": 0.0
+            }
+          ],
+          "products": [
+            {
+              "name": "발베니 카라멜",
+              "category": "위스키 아이스크림",
+              "cnt": 82,
+              "revenue": 1326000
+            },
+            {
+              "name": "아메리카노",
+              "category": "커피",
+              "cnt": 80,
+              "revenue": 660000
+            },
+            {
+              "name": "메이커스 바닐라",
+              "category": "위스키 아이스크림",
+              "cnt": 79,
+              "revenue": 810000
+            },
+            {
+              "name": "아이리쉬 커피",
+              "category": "커피",
+              "cnt": 68,
+              "revenue": 816000
+            },
+            {
+              "name": "얼그레이 휘낭시가",
+              "category": "디저트",
+              "cnt": 61,
+              "revenue": 369200
+            },
+            {
+              "name": "싱글 포레스트",
+              "category": "위스키 아이스크림",
+              "cnt": 61,
+              "revenue": 610000
+            },
+            {
+              "name": "[Non] 딸기 소르베",
+              "category": "논알콜 젤라또",
+              "cnt": 60,
+              "revenue": 663000
+            },
+            {
+              "name": "애플피딕",
+              "category": "위스키 아이스크림",
+              "cnt": 56,
+              "revenue": 900000
+            },
+            {
+              "name": "플레인 휘낭시가",
+              "category": "디저트",
+              "cnt": 55,
+              "revenue": 273600
+            },
+            {
+              "name": "엔젤스 밤",
+              "category": "위스키 아이스크림",
+              "cnt": 54,
+              "revenue": 696000
+            },
+            {
+              "name": "스모키 초코벡",
+              "category": "위스키 아이스크림",
+              "cnt": 54,
+              "revenue": 672000
+            },
+            {
+              "name": "치즈 올리브 휘낭시가",
+              "category": "디저트",
+              "cnt": 51,
+              "revenue": 412500
+            },
+            {
+              "name": "[Non] 피스타치오 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 50,
+              "revenue": 442000
+            },
+            {
+              "name": "글렌오렌지",
+              "category": "위스키 아이스크림",
+              "cnt": 49,
+              "revenue": 612000
+            },
+            {
+              "name": "[Non] 밀크 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 49,
+              "revenue": 385000
+            },
+            {
+              "name": "[Non] 얼그레이 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 48,
+              "revenue": 400000
+            },
+            {
+              "name": "밀크 아포가토",
+              "category": "논알콜 젤라또",
+              "cnt": 48,
+              "revenue": 544000
+            },
+            {
+              "name": "오렌지 바 에이드",
+              "category": "에이드",
+              "cnt": 47,
+              "revenue": 418000
+            },
+            {
+              "name": "바닐라 라떼",
+              "category": "커피",
+              "cnt": 42,
+              "revenue": 313000
+            },
+            {
+              "name": "패션후르츠 바 에이드",
+              "category": "에이드",
+              "cnt": 39,
+              "revenue": 331500
+            },
+            {
+              "name": "슬로우 워커",
+              "category": "위스키 아이스크림",
+              "cnt": 39,
+              "revenue": 410000
+            },
+            {
+              "name": "카페라떼",
+              "category": "커피",
+              "cnt": 37,
+              "revenue": 247500
+            },
+            {
+              "name": "블랙 베리",
+              "category": "위스키 아이스크림",
+              "cnt": 31,
+              "revenue": 407000
+            },
+            {
+              "name": "에스프레소",
+              "category": "커피",
+              "cnt": 28,
+              "revenue": 220000
+            },
+            {
+              "name": "포장 보냉백",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 56000
+            },
+            {
+              "name": "콜드브루(디카페인)",
+              "category": "커피",
+              "cnt": 27,
+              "revenue": 227500
+            },
+            {
+              "name": "커피아몬드 휘낭시가",
+              "category": "디저트",
+              "cnt": 27,
+              "revenue": 192500
+            },
+            {
+              "name": "레몬 바 에이드",
+              "category": "에이드",
+              "cnt": 24,
+              "revenue": 221000
+            },
+            {
+              "name": "스모키 초코백",
+              "category": "위스키 아이스크림",
+              "cnt": 22,
+              "revenue": 264000
+            },
+            {
+              "name": "[Rum] 라임 바 모히또",
+              "category": "에이드",
+              "cnt": 21,
+              "revenue": 252000
+            },
+            {
+              "name": "커피 아몬드 휘낭시가",
+              "category": "디저트",
+              "cnt": 20,
+              "revenue": 120700
+            },
+            {
+              "name": "얼그레이 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 18,
+              "revenue": 140000
+            },
+            {
+              "name": "딸기소르베",
+              "category": "논알콜 젤라또",
+              "cnt": 17,
+              "revenue": 127500
+            },
+            {
+              "name": "애플 피딕",
+              "category": "위스키 아이스크림",
+              "cnt": 17,
+              "revenue": 285000
+            },
+            {
+              "name": "[Whisky] 체리 바 잭 콕",
+              "category": "에이드",
+              "cnt": 16,
+              "revenue": 192000
+            },
+            {
+              "name": "엔젤스밤",
+              "category": "위스키 아이스크림",
+              "cnt": 15,
+              "revenue": 228000
+            },
+            {
+              "name": "콜드브루 (디카페인)",
+              "category": "커피",
+              "cnt": 14,
+              "revenue": 104000
+            },
+            {
+              "name": "[몰트] 맥캘란 12y",
+              "category": "위스키",
+              "cnt": 13,
+              "revenue": 323000
+            },
+            {
+              "name": "휘낭시가 선물세트",
+              "category": "디저트",
+              "cnt": 13,
+              "revenue": 425000
+            },
+            {
+              "name": "글렌 오렌지",
+              "category": "위스키 아이스크림",
+              "cnt": 12,
+              "revenue": 144000
+            },
+            {
+              "name": "[몰트] 발베니 12Y",
+              "category": "위스키",
+              "cnt": 12,
+              "revenue": 266000
+            },
+            {
+              "name": "[몰트] 글렌그란트 10Y",
+              "category": "위스키",
+              "cnt": 11,
+              "revenue": 285000
+            },
+            {
+              "name": "[버번] 엔젤스 엔비",
+              "category": "위스키",
+              "cnt": 9,
+              "revenue": 240000
+            },
+            {
+              "name": "[블렌디드] 조니워커 블랙",
+              "category": "위스키",
+              "cnt": 9,
+              "revenue": 210000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y",
+              "category": "위스키",
+              "cnt": 9,
+              "revenue": 187000
+            },
+            {
+              "name": "[몰트] 글렌모렌지 오리지널",
+              "category": "위스키",
+              "cnt": 9,
+              "revenue": 144000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y 셰리",
+              "category": "위스키",
+              "cnt": 8,
+              "revenue": 180000
+            },
+            {
+              "name": "위스키샷 추가",
+              "category": "위스키 아이스크림",
+              "cnt": 8,
+              "revenue": 140000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 17Y",
+              "category": "위스키",
+              "cnt": 8,
+              "revenue": 450000
+            },
+            {
+              "name": "[몰트] 달모어 12y",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 161000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 12Y",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 108000
+            },
+            {
+              "name": "[몰트] 탈리스커 10Y",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 144000
+            },
+            {
+              "name": "[몰트]글렌리벳 12Y",
+              "category": "위스키",
+              "cnt": 6,
+              "revenue": 108000
+            },
+            {
+              "name": "밀크젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 5,
+              "revenue": 35000
+            },
+            {
+              "name": "[버번] 메이커스마크",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 65000
+            },
+            {
+              "name": "[블렌디드] 조니워커 그린",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 90000
+            },
+            {
+              "name": "[블렌디드] 시바스리갈 12Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 84000
+            },
+            {
+              "name": "[버번] 와일드터키 8Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 70000
+            },
+            {
+              "name": "[몰트] 발베니 14Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 261000
+            },
+            {
+              "name": "[Package] 젤라또 패키지",
+              "category": "위스키 아이스크림",
+              "cnt": 5,
+              "revenue": 240000
+            },
+            {
+              "name": "[KOR] 기원 독수리",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 72000
+            },
+            {
+              "name": "피스타치오 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 4,
+              "revenue": 51000
+            },
+            {
+              "name": "[몰트]글렌피딕 15Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 138000
+            },
+            {
+              "name": "콜드브루",
+              "category": "커피",
+              "cnt": 3,
+              "revenue": 18500
+            },
+            {
+              "name": "[몰트] 맥캘란 15y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 108000
+            },
+            {
+              "name": "[KOR] 기원 호랑이",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 57000
+            },
+            {
+              "name": "젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 3,
+              "revenue": 25500
+            },
+            {
+              "name": "[블렌디드] 조니워커 블루",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 240000
+            },
+            {
+              "name": "[블렌디드] 듀어스 12Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 42000
+            },
+            {
+              "name": "[몰트] 아드벡 10Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 57000
+            },
+            {
+              "name": "[몰트] 라프로익 10Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 60000
+            },
+            {
+              "name": "[JAP] 히비키 하모니",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 84000
+            },
+            {
+              "name": "올리브 치즈 휘낭시가",
+              "category": "디저트",
+              "cnt": 2,
+              "revenue": 11000
+            },
+            {
+              "name": "임시",
+              "category": "위스키 아이스크림",
+              "cnt": 2,
+              "revenue": 21500
+            },
+            {
+              "name": "위스키 글라스",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 20000
+            },
+            {
+              "name": "[몰트] 글렌드로낙 15Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 50000
+            },
+            {
+              "name": "[몰트] 라가불린 8Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 38000
+            },
+            {
+              "name": "라임 바 모히또",
+              "category": "에이드",
+              "cnt": 2,
+              "revenue": 24000
+            },
+            {
+              "name": "[몰트] 아드벡 우게다일",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 26000
+            },
+            {
+              "name": "[몰트] 아드벡 위비스티",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 15000
+            },
+            {
+              "name": "[몰트] 글렌리벳 15Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 24000
+            },
+            {
+              "name": "[JAP] 닛카 프롬 더 배럴",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 14000
+            },
+            {
+              "name": "[몰트] 글렌드로낙 12Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 18000
+            },
+            {
+              "name": "[몰트] 글렌모렌지 콴타루반",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 21000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 21Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 38000
+            },
+            {
+              "name": "[블렌디드] 시바스리갈 18Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 26000
+            },
+            {
+              "name": "바닐라라떼",
+              "category": "커피",
+              "cnt": 1,
+              "revenue": 6000
+            },
+            {
+              "name": "[블렌디드] 히비키 하모니",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 42000
+            },
+            {
+              "name": "[싱글몰트] 기원 독수리",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 18000
+            },
+            {
+              "name": "체리 잭 콕",
+              "category": "에이드",
+              "cnt": 1,
+              "revenue": 12000
+            },
+            {
+              "name": "에스프레소 추가",
+              "category": "기타",
+              "cnt": 1,
+              "revenue": 2000
+            },
+            {
+              "name": "추가결제",
+              "category": "위스키 아이스크림",
+              "cnt": 1,
+              "revenue": 1000
+            },
+            {
+              "name": "[버번] 버팔로 트레이스",
+              "category": "위스키",
+              "cnt": -1,
+              "revenue": 403000
+            }
+          ],
+          "hourly": [
+            {
+              "hour": 0,
+              "revenue": 95800,
+              "tc": 4
+            },
+            {
+              "hour": 11,
+              "revenue": 722370,
+              "tc": 51
+            },
+            {
+              "hour": 12,
+              "revenue": 6860820,
+              "tc": 333
+            },
+            {
+              "hour": 13,
+              "revenue": 3782830,
+              "tc": 184
+            },
+            {
+              "hour": 14,
+              "revenue": 5108450,
+              "tc": 237
+            },
+            {
+              "hour": 15,
+              "revenue": 6297750,
+              "tc": 266
+            },
+            {
+              "hour": 16,
+              "revenue": 6360000,
+              "tc": 298
+            },
+            {
+              "hour": 17,
+              "revenue": 4682150,
+              "tc": 210
+            },
+            {
+              "hour": 18,
+              "revenue": 4644400,
+              "tc": 207
+            },
+            {
+              "hour": 19,
+              "revenue": 6481590,
+              "tc": 256
+            },
+            {
+              "hour": 20,
+              "revenue": 9972430,
+              "tc": 321
+            },
+            {
+              "hour": 21,
+              "revenue": 9606770,
+              "tc": 294
+            },
+            {
+              "hour": 22,
+              "revenue": 6166480,
+              "tc": 187
+            },
+            {
+              "hour": 23,
+              "revenue": 2304000,
+              "tc": 57
+            }
+          ],
+          "dow": [
+            {
+              "dow": 0,
+              "name": "월",
+              "avg_revenue": 1317005,
+              "days": 4
+            },
+            {
+              "dow": 1,
+              "name": "화",
+              "avg_revenue": 2085725,
+              "days": 4
+            },
+            {
+              "dow": 2,
+              "name": "수",
+              "avg_revenue": 1712682,
+              "days": 4
+            },
+            {
+              "dow": 3,
+              "name": "목",
+              "avg_revenue": 2288625,
+              "days": 4
+            },
+            {
+              "dow": 4,
+              "name": "금",
+              "avg_revenue": 2998634,
+              "days": 5
+            },
+            {
+              "dow": 5,
+              "name": "토",
+              "avg_revenue": 3786442,
+              "days": 5
+            },
+            {
+              "dow": 6,
+              "name": "일",
+              "avg_revenue": 1759418,
+              "days": 5
+            }
+          ]
+        },
+        "쓰윗성수": {
+          "categories": [
+            {
+              "name": "위스키 아이스크림",
+              "revenue": 3051000,
+              "cnt": 243,
+              "share": 29.6
+            },
+            {
+              "name": "논알콜 젤라또",
+              "revenue": 1040000,
+              "cnt": 116,
+              "share": 10.1
+            },
+            {
+              "name": "커피",
+              "revenue": 893000,
+              "cnt": 111,
+              "share": 8.7
+            },
+            {
+              "name": "에이드",
+              "revenue": 707500,
+              "cnt": 71,
+              "share": 6.9
+            },
+            {
+              "name": "디저트",
+              "revenue": 1125200,
+              "cnt": 126,
+              "share": 10.9
+            },
+            {
+              "name": "위스키",
+              "revenue": 3475000,
+              "cnt": 112,
+              "share": 33.8
+            }
+          ],
+          "products": [
+            {
+              "name": "아메리카노",
+              "category": "커피",
+              "cnt": 31,
+              "revenue": 205000
+            },
+            {
+              "name": "치즈 올리브 휘낭시가",
+              "category": "디저트",
+              "cnt": 31,
+              "revenue": 291500
+            },
+            {
+              "name": "얼그레이 휘낭시가",
+              "category": "디저트",
+              "cnt": 31,
+              "revenue": 192400
+            },
+            {
+              "name": "발베니 카라멜",
+              "category": "위스키 아이스크림",
+              "cnt": 30,
+              "revenue": 468000
+            },
+            {
+              "name": "[Non] 딸기 소르베",
+              "category": "논알콜 젤라또",
+              "cnt": 29,
+              "revenue": 297500
+            },
+            {
+              "name": "플레인 휘낭시가",
+              "category": "디저트",
+              "cnt": 29,
+              "revenue": 148800
+            },
+            {
+              "name": "애플피딕",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 420000
+            },
+            {
+              "name": "스모키 초코벡",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 336000
+            },
+            {
+              "name": "엔젤스 밤",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 360000
+            },
+            {
+              "name": "메이커스 바닐라",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 300000
+            },
+            {
+              "name": "커피아몬드 휘낭시가",
+              "category": "디저트",
+              "cnt": 27,
+              "revenue": 192500
+            },
+            {
+              "name": "글렌오렌지",
+              "category": "위스키 아이스크림",
+              "cnt": 26,
+              "revenue": 312000
+            },
+            {
+              "name": "싱글 포레스트",
+              "category": "위스키 아이스크림",
+              "cnt": 26,
+              "revenue": 260000
+            },
+            {
+              "name": "아이리쉬 커피",
+              "category": "커피",
+              "cnt": 24,
+              "revenue": 255000
+            },
+            {
+              "name": "[Non] 피스타치오 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 24,
+              "revenue": 221000
+            },
+            {
+              "name": "[Non] 밀크 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 22,
+              "revenue": 168000
+            },
+            {
+              "name": "[Non] 얼그레이 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 22,
+              "revenue": 192000
+            },
+            {
+              "name": "패션후르츠 바 에이드",
+              "category": "에이드",
+              "cnt": 19,
+              "revenue": 161500
+            },
+            {
+              "name": "밀크 아포가토",
+              "category": "논알콜 젤라또",
+              "cnt": 19,
+              "revenue": 161500
+            },
+            {
+              "name": "오렌지 바 에이드",
+              "category": "에이드",
+              "cnt": 19,
+              "revenue": 178500
+            },
+            {
+              "name": "바닐라 라떼",
+              "category": "커피",
+              "cnt": 18,
+              "revenue": 121000
+            },
+            {
+              "name": "콜드브루 (디카페인)",
+              "category": "커피",
+              "cnt": 14,
+              "revenue": 104000
+            },
+            {
+              "name": "포장 보냉백",
+              "category": "위스키 아이스크림",
+              "cnt": 14,
+              "revenue": 28000
+            },
+            {
+              "name": "레몬 바 에이드",
+              "category": "에이드",
+              "cnt": 13,
+              "revenue": 127500
+            },
+            {
+              "name": "에스프레소",
+              "category": "커피",
+              "cnt": 12,
+              "revenue": 120000
+            },
+            {
+              "name": "블랙 베리",
+              "category": "위스키 아이스크림",
+              "cnt": 12,
+              "revenue": 154000
+            },
+            {
+              "name": "카페라떼",
+              "category": "커피",
+              "cnt": 12,
+              "revenue": 88000
+            },
+            {
+              "name": "슬로우 워커",
+              "category": "위스키 아이스크림",
+              "cnt": 12,
+              "revenue": 120000
+            },
+            {
+              "name": "[Rum] 라임 바 모히또",
+              "category": "에이드",
+              "cnt": 11,
+              "revenue": 132000
+            },
+            {
+              "name": "[몰트] 맥캘란 12y",
+              "category": "위스키",
+              "cnt": 9,
+              "revenue": 209000
+            },
+            {
+              "name": "[Whisky] 체리 바 잭 콕",
+              "category": "에이드",
+              "cnt": 9,
+              "revenue": 108000
+            },
+            {
+              "name": "휘낭시가 선물세트",
+              "category": "디저트",
+              "cnt": 8,
+              "revenue": 300000
+            },
+            {
+              "name": "[몰트] 글렌모렌지 오리지널",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 112000
+            },
+            {
+              "name": "[몰트] 글렌그란트 10Y",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 195000
+            },
+            {
+              "name": "[몰트] 발베니 12Y",
+              "category": "위스키",
+              "cnt": 7,
+              "revenue": 171000
+            },
+            {
+              "name": "[몰트] 탈리스커 10Y",
+              "category": "위스키",
+              "cnt": 6,
+              "revenue": 128000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 17Y",
+              "category": "위스키",
+              "cnt": 6,
+              "revenue": 350000
+            },
+            {
+              "name": "[버번] 엔젤스 엔비",
+              "category": "위스키",
+              "cnt": 6,
+              "revenue": 192000
+            },
+            {
+              "name": "위스키샷 추가",
+              "category": "위스키 아이스크림",
+              "cnt": 6,
+              "revenue": 100000
+            },
+            {
+              "name": "[블렌디드] 조니워커 블랙",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 154000
+            },
+            {
+              "name": "[몰트] 발베니 14Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 261000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 12Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 84000
+            },
+            {
+              "name": "[KOR] 기원 독수리",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 72000
+            },
+            {
+              "name": "[몰트]글렌리벳 12Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 72000
+            },
+            {
+              "name": "[Package] 젤라또 패키지",
+              "category": "위스키 아이스크림",
+              "cnt": 4,
+              "revenue": 192000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y 셰리",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 72000
+            },
+            {
+              "name": "[블렌디드] 시바스리갈 12Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 72000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 68000
+            },
+            {
+              "name": "[몰트]글렌피딕 15Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 138000
+            },
+            {
+              "name": "[버번] 메이커스마크",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 39000
+            },
+            {
+              "name": "[KOR] 기원 호랑이",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 57000
+            },
+            {
+              "name": "위스키 글라스",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 20000
+            },
+            {
+              "name": "[JAP] 히비키 하모니",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 84000
+            },
+            {
+              "name": "[몰트] 달모어 12y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 46000
+            },
+            {
+              "name": "[몰트] 라프로익 10Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 40000
+            },
+            {
+              "name": "[몰트] 맥캘란 15y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 72000
+            },
+            {
+              "name": "[블렌디드] 조니워커 블루",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 192000
+            },
+            {
+              "name": "[버번] 와일드터키 8Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 28000
+            },
+            {
+              "name": "[JAP] 닛카 프롬 더 배럴",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 14000
+            },
+            {
+              "name": "[몰트] 글렌드로낙 15Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 25000
+            },
+            {
+              "name": "[몰트] 아드벡 위비스티",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 15000
+            },
+            {
+              "name": "[몰트] 아드벡 우게다일",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 26000
+            },
+            {
+              "name": "[몰트] 글렌모렌지 콴타루반",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 21000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 21Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 38000
+            },
+            {
+              "name": "[몰트] 글렌드로낙 12Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 18000
+            },
+            {
+              "name": "추가결제",
+              "category": "위스키 아이스크림",
+              "cnt": 1,
+              "revenue": 1000
+            },
+            {
+              "name": "[버번] 버팔로 트레이스",
+              "category": "위스키",
+              "cnt": -2,
+              "revenue": 390000
+            }
+          ],
+          "hourly": [
+            {
+              "hour": 11,
+              "revenue": 63300,
+              "tc": 4
+            },
+            {
+              "hour": 12,
+              "revenue": 983600,
+              "tc": 37
+            },
+            {
+              "hour": 13,
+              "revenue": 1790900,
+              "tc": 69
+            },
+            {
+              "hour": 14,
+              "revenue": 2210350,
+              "tc": 87
+            },
+            {
+              "hour": 15,
+              "revenue": 3597200,
+              "tc": 113
+            },
+            {
+              "hour": 16,
+              "revenue": 3618750,
+              "tc": 142
+            },
+            {
+              "hour": 17,
+              "revenue": 2871250,
+              "tc": 102
+            },
+            {
+              "hour": 18,
+              "revenue": 2205800,
+              "tc": 78
+            },
+            {
+              "hour": 19,
+              "revenue": 2931470,
+              "tc": 108
+            },
+            {
+              "hour": 20,
+              "revenue": 4941060,
+              "tc": 157
+            },
+            {
+              "hour": 21,
+              "revenue": 5212010,
+              "tc": 150
+            },
+            {
+              "hour": 22,
+              "revenue": 3710070,
+              "tc": 106
+            },
+            {
+              "hour": 23,
+              "revenue": 1482930,
+              "tc": 36
+            }
+          ],
+          "dow": [
+            {
+              "dow": 0,
+              "name": "월",
+              "avg_revenue": 1006500,
+              "days": 1
+            },
+            {
+              "dow": 1,
+              "name": "화",
+              "avg_revenue": 965512,
+              "days": 4
+            },
+            {
+              "dow": 2,
+              "name": "수",
+              "avg_revenue": 663385,
+              "days": 4
+            },
+            {
+              "dow": 3,
+              "name": "목",
+              "avg_revenue": 891212,
+              "days": 4
+            },
+            {
+              "dow": 4,
+              "name": "금",
+              "avg_revenue": 1350654,
+              "days": 5
+            },
+            {
+              "dow": 5,
+              "name": "토",
+              "avg_revenue": 2100288,
+              "days": 5
+            },
+            {
+              "dow": 6,
+              "name": "일",
+              "avg_revenue": 1455408,
+              "days": 5
+            }
+          ]
+        },
+        "성수1층": {
+          "categories": [
+            {
+              "name": "위스키 아이스크림",
+              "revenue": 1909500,
+              "cnt": 160,
+              "share": 70.7
+            },
+            {
+              "name": "논알콜 젤라또",
+              "revenue": 387500,
+              "cnt": 48,
+              "share": 14.3
+            },
+            {
+              "name": "커피",
+              "revenue": 210000,
+              "cnt": 30,
+              "share": 7.8
+            },
+            {
+              "name": "에이드",
+              "revenue": 148000,
+              "cnt": 16,
+              "share": 5.5
+            },
+            {
+              "name": "디저트",
+              "revenue": 47200,
+              "cnt": 9,
+              "share": 1.7
+            }
+          ],
+          "products": [
+            {
+              "name": "메이커스 바닐라",
+              "category": "위스키 아이스크림",
+              "cnt": 25,
+              "revenue": 250000
+            },
+            {
+              "name": "발베니 카라멜",
+              "category": "위스키 아이스크림",
+              "cnt": 25,
+              "revenue": 325000
+            },
+            {
+              "name": "스모키 초코백",
+              "category": "위스키 아이스크림",
+              "cnt": 22,
+              "revenue": 264000
+            },
+            {
+              "name": "얼그레이 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 18,
+              "revenue": 140000
+            },
+            {
+              "name": "애플 피딕",
+              "category": "위스키 아이스크림",
+              "cnt": 17,
+              "revenue": 285000
+            },
+            {
+              "name": "딸기소르베",
+              "category": "논알콜 젤라또",
+              "cnt": 17,
+              "revenue": 127500
+            },
+            {
+              "name": "슬로우 워커",
+              "category": "위스키 아이스크림",
+              "cnt": 16,
+              "revenue": 180000
+            },
+            {
+              "name": "엔젤스밤",
+              "category": "위스키 아이스크림",
+              "cnt": 15,
+              "revenue": 228000
+            },
+            {
+              "name": "아메리카노",
+              "category": "커피",
+              "cnt": 14,
+              "revenue": 90000
+            },
+            {
+              "name": "글렌 오렌지",
+              "category": "위스키 아이스크림",
+              "cnt": 12,
+              "revenue": 144000
+            },
+            {
+              "name": "싱글 포레스트",
+              "category": "위스키 아이스크림",
+              "cnt": 11,
+              "revenue": 110000
+            },
+            {
+              "name": "아이리쉬 커피",
+              "category": "커피",
+              "cnt": 10,
+              "revenue": 85000
+            },
+            {
+              "name": "블랙 베리",
+              "category": "위스키 아이스크림",
+              "cnt": 8,
+              "revenue": 88000
+            },
+            {
+              "name": "오렌지 바 에이드",
+              "category": "에이드",
+              "cnt": 7,
+              "revenue": 61000
+            },
+            {
+              "name": "포장 보냉백",
+              "category": "위스키 아이스크림",
+              "cnt": 7,
+              "revenue": 14000
+            },
+            {
+              "name": "밀크젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 5,
+              "revenue": 35000
+            },
+            {
+              "name": "패션후르츠 바 에이드",
+              "category": "에이드",
+              "cnt": 4,
+              "revenue": 34000
+            },
+            {
+              "name": "피스타치오 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 4,
+              "revenue": 51000
+            },
+            {
+              "name": "콜드브루",
+              "category": "커피",
+              "cnt": 3,
+              "revenue": 18500
+            },
+            {
+              "name": "젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 3,
+              "revenue": 25500
+            },
+            {
+              "name": "커피 아몬드 휘낭시가",
+              "category": "디저트",
+              "cnt": 3,
+              "revenue": 16200
+            },
+            {
+              "name": "임시",
+              "category": "위스키 아이스크림",
+              "cnt": 2,
+              "revenue": 21500
+            },
+            {
+              "name": "레몬 바 에이드",
+              "category": "에이드",
+              "cnt": 2,
+              "revenue": 17000
+            },
+            {
+              "name": "라임 바 모히또",
+              "category": "에이드",
+              "cnt": 2,
+              "revenue": 24000
+            },
+            {
+              "name": "플레인 휘낭시가",
+              "category": "디저트",
+              "cnt": 2,
+              "revenue": 9600
+            },
+            {
+              "name": "올리브 치즈 휘낭시가",
+              "category": "디저트",
+              "cnt": 2,
+              "revenue": 11000
+            },
+            {
+              "name": "얼그레이 휘낭시가",
+              "category": "디저트",
+              "cnt": 2,
+              "revenue": 10400
+            },
+            {
+              "name": "바닐라라떼",
+              "category": "커피",
+              "cnt": 1,
+              "revenue": 6000
+            },
+            {
+              "name": "밀크 아포가토",
+              "category": "논알콜 젤라또",
+              "cnt": 1,
+              "revenue": 8500
+            },
+            {
+              "name": "에스프레소",
+              "category": "커피",
+              "cnt": 1,
+              "revenue": 5000
+            },
+            {
+              "name": "체리 잭 콕",
+              "category": "에이드",
+              "cnt": 1,
+              "revenue": 12000
+            },
+            {
+              "name": "카페라떼",
+              "category": "커피",
+              "cnt": 1,
+              "revenue": 5500
+            }
+          ],
+          "hourly": [
+            {
+              "hour": 12,
+              "revenue": 291600,
+              "tc": 20
+            },
+            {
+              "hour": 13,
+              "revenue": 559350,
+              "tc": 40
+            },
+            {
+              "hour": 14,
+              "revenue": 1107400,
+              "tc": 80
+            },
+            {
+              "hour": 15,
+              "revenue": 1212050,
+              "tc": 78
+            },
+            {
+              "hour": 16,
+              "revenue": 1294400,
+              "tc": 87
+            },
+            {
+              "hour": 17,
+              "revenue": 793500,
+              "tc": 59
+            },
+            {
+              "hour": 18,
+              "revenue": 884400,
+              "tc": 62
+            },
+            {
+              "hour": 19,
+              "revenue": 444050,
+              "tc": 29
+            },
+            {
+              "hour": 20,
+              "revenue": 216650,
+              "tc": 11
+            },
+            {
+              "hour": 21,
+              "revenue": 118700,
+              "tc": 4
+            },
+            {
+              "hour": 23,
+              "revenue": 14000,
+              "tc": 1
+            }
+          ],
+          "dow": [
+            {
+              "dow": 0,
+              "name": "월",
+              "avg_revenue": 298800,
+              "days": 1
+            },
+            {
+              "dow": 1,
+              "name": "화",
+              "avg_revenue": 149675,
+              "days": 4
+            },
+            {
+              "dow": 2,
+              "name": "수",
+              "avg_revenue": 132167,
+              "days": 3
+            },
+            {
+              "dow": 3,
+              "name": "목",
+              "avg_revenue": 108462,
+              "days": 4
+            },
+            {
+              "dow": 4,
+              "name": "금",
+              "avg_revenue": 330720,
+              "days": 5
+            },
+            {
+              "dow": 5,
+              "name": "토",
+              "avg_revenue": 406920,
+              "days": 5
+            },
+            {
+              "dow": 6,
+              "name": "일",
+              "avg_revenue": 304010,
+              "days": 5
+            }
+          ]
+        },
+        "쓰윗종각": {
+          "categories": [
+            {
+              "name": "위스키 아이스크림",
+              "revenue": 2862000,
+              "cnt": 212,
+              "share": 33.7
+            },
+            {
+              "name": "논알콜 젤라또",
+              "revenue": 1385500,
+              "cnt": 138,
+              "share": 16.3
+            },
+            {
+              "name": "커피",
+              "revenue": 1509500,
+              "cnt": 159,
+              "share": 17.8
+            },
+            {
+              "name": "에이드",
+              "revenue": 595000,
+              "cnt": 63,
+              "share": 7.0
+            },
+            {
+              "name": "디저트",
+              "revenue": 632100,
+              "cnt": 94,
+              "share": 7.4
+            },
+            {
+              "name": "위스키",
+              "revenue": 1512000,
+              "cnt": 71,
+              "share": 17.8
+            },
+            {
+              "name": "기타",
+              "revenue": 2000,
+              "cnt": 1,
+              "share": 0.0
+            }
+          ],
+          "products": [
+            {
+              "name": "아메리카노",
+              "category": "커피",
+              "cnt": 35,
+              "revenue": 365000
+            },
+            {
+              "name": "아이리쉬 커피",
+              "category": "커피",
+              "cnt": 34,
+              "revenue": 476000
+            },
+            {
+              "name": "[Non] 딸기 소르베",
+              "category": "논알콜 젤라또",
+              "cnt": 31,
+              "revenue": 365500
+            },
+            {
+              "name": "밀크 아포가토",
+              "category": "논알콜 젤라또",
+              "cnt": 28,
+              "revenue": 374000
+            },
+            {
+              "name": "애플피딕",
+              "category": "위스키 아이스크림",
+              "cnt": 28,
+              "revenue": 480000
+            },
+            {
+              "name": "얼그레이 휘낭시가",
+              "category": "디저트",
+              "cnt": 28,
+              "revenue": 166400
+            },
+            {
+              "name": "[Non] 밀크 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 27,
+              "revenue": 217000
+            },
+            {
+              "name": "콜드브루(디카페인)",
+              "category": "커피",
+              "cnt": 27,
+              "revenue": 227500
+            },
+            {
+              "name": "발베니 카라멜",
+              "category": "위스키 아이스크림",
+              "cnt": 27,
+              "revenue": 533000
+            },
+            {
+              "name": "메이커스 바닐라",
+              "category": "위스키 아이스크림",
+              "cnt": 26,
+              "revenue": 260000
+            },
+            {
+              "name": "[Non] 얼그레이 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 26,
+              "revenue": 208000
+            },
+            {
+              "name": "[Non] 피스타치오 젤라또",
+              "category": "논알콜 젤라또",
+              "cnt": 26,
+              "revenue": 221000
+            },
+            {
+              "name": "스모키 초코벡",
+              "category": "위스키 아이스크림",
+              "cnt": 26,
+              "revenue": 336000
+            },
+            {
+              "name": "엔젤스 밤",
+              "category": "위스키 아이스크림",
+              "cnt": 26,
+              "revenue": 336000
+            },
+            {
+              "name": "카페라떼",
+              "category": "커피",
+              "cnt": 24,
+              "revenue": 154000
+            },
+            {
+              "name": "플레인 휘낭시가",
+              "category": "디저트",
+              "cnt": 24,
+              "revenue": 115200
+            },
+            {
+              "name": "바닐라 라떼",
+              "category": "커피",
+              "cnt": 24,
+              "revenue": 192000
+            },
+            {
+              "name": "싱글 포레스트",
+              "category": "위스키 아이스크림",
+              "cnt": 24,
+              "revenue": 240000
+            },
+            {
+              "name": "글렌오렌지",
+              "category": "위스키 아이스크림",
+              "cnt": 23,
+              "revenue": 300000
+            },
+            {
+              "name": "오렌지 바 에이드",
+              "category": "에이드",
+              "cnt": 21,
+              "revenue": 178500
+            },
+            {
+              "name": "치즈 올리브 휘낭시가",
+              "category": "디저트",
+              "cnt": 20,
+              "revenue": 121000
+            },
+            {
+              "name": "커피 아몬드 휘낭시가",
+              "category": "디저트",
+              "cnt": 17,
+              "revenue": 104500
+            },
+            {
+              "name": "패션후르츠 바 에이드",
+              "category": "에이드",
+              "cnt": 16,
+              "revenue": 136000
+            },
+            {
+              "name": "에스프레소",
+              "category": "커피",
+              "cnt": 15,
+              "revenue": 95000
+            },
+            {
+              "name": "슬로우 워커",
+              "category": "위스키 아이스크림",
+              "cnt": 11,
+              "revenue": 110000
+            },
+            {
+              "name": "블랙 베리",
+              "category": "위스키 아이스크림",
+              "cnt": 11,
+              "revenue": 165000
+            },
+            {
+              "name": "[Rum] 라임 바 모히또",
+              "category": "에이드",
+              "cnt": 10,
+              "revenue": 120000
+            },
+            {
+              "name": "레몬 바 에이드",
+              "category": "에이드",
+              "cnt": 9,
+              "revenue": 76500
+            },
+            {
+              "name": "포장 보냉백",
+              "category": "위스키 아이스크림",
+              "cnt": 7,
+              "revenue": 14000
+            },
+            {
+              "name": "[Whisky] 체리 바 잭 콕",
+              "category": "에이드",
+              "cnt": 7,
+              "revenue": 84000
+            },
+            {
+              "name": "[몰트] 달모어 12y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 115000
+            },
+            {
+              "name": "[블렌디드] 조니워커 그린",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 90000
+            },
+            {
+              "name": "휘낭시가 선물세트",
+              "category": "디저트",
+              "cnt": 5,
+              "revenue": 125000
+            },
+            {
+              "name": "[몰트] 발베니 12Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 95000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y",
+              "category": "위스키",
+              "cnt": 5,
+              "revenue": 119000
+            },
+            {
+              "name": "[몰트] 글렌그란트 10Y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 90000
+            },
+            {
+              "name": "[몰트] 글렌피딕 12Y 셰리",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 108000
+            },
+            {
+              "name": "[블렌디드] 조니워커 블랙",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 56000
+            },
+            {
+              "name": "[몰트] 맥캘란 12y",
+              "category": "위스키",
+              "cnt": 4,
+              "revenue": 114000
+            },
+            {
+              "name": "[버번] 와일드터키 8Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 42000
+            },
+            {
+              "name": "[버번] 엔젤스 엔비",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 48000
+            },
+            {
+              "name": "[몰트] 아드벡 10Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 57000
+            },
+            {
+              "name": "[블렌디드] 듀어스 12Y",
+              "category": "위스키",
+              "cnt": 3,
+              "revenue": 42000
+            },
+            {
+              "name": "[몰트] 라가불린 8Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 38000
+            },
+            {
+              "name": "[버번] 메이커스마크",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 26000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 17Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 100000
+            },
+            {
+              "name": "[몰트] 글렌모렌지 오리지널",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 32000
+            },
+            {
+              "name": "[블렌디드] 발렌타인 12Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 24000
+            },
+            {
+              "name": "[몰트]글렌리벳 12Y",
+              "category": "위스키",
+              "cnt": 2,
+              "revenue": 36000
+            },
+            {
+              "name": "위스키샷 추가",
+              "category": "위스키 아이스크림",
+              "cnt": 2,
+              "revenue": 40000
+            },
+            {
+              "name": "[블렌디드] 시바스리갈 18Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 26000
+            },
+            {
+              "name": "[몰트] 맥캘란 15y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 36000
+            },
+            {
+              "name": "[몰트] 라프로익 10Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 20000
+            },
+            {
+              "name": "[몰트] 글렌리벳 15Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 24000
+            },
+            {
+              "name": "[몰트] 글렌드로낙 15Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 25000
+            },
+            {
+              "name": "[Package] 젤라또 패키지",
+              "category": "위스키 아이스크림",
+              "cnt": 1,
+              "revenue": 48000
+            },
+            {
+              "name": "[블렌디드] 시바스리갈 12Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 12000
+            },
+            {
+              "name": "[버번] 버팔로 트레이스",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 13000
+            },
+            {
+              "name": "[몰트] 탈리스커 10Y",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 16000
+            },
+            {
+              "name": "[블렌디드] 히비키 하모니",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 42000
+            },
+            {
+              "name": "[블렌디드] 조니워커 블루",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 48000
+            },
+            {
+              "name": "[싱글몰트] 기원 독수리",
+              "category": "위스키",
+              "cnt": 1,
+              "revenue": 18000
+            },
+            {
+              "name": "에스프레소 추가",
+              "category": "기타",
+              "cnt": 1,
+              "revenue": 2000
+            }
+          ],
+          "hourly": [
+            {
+              "hour": 0,
+              "revenue": 95800,
+              "tc": 4
+            },
+            {
+              "hour": 11,
+              "revenue": 659070,
+              "tc": 47
+            },
+            {
+              "hour": 12,
+              "revenue": 5585620,
+              "tc": 276
+            },
+            {
+              "hour": 13,
+              "revenue": 1432580,
+              "tc": 75
+            },
+            {
+              "hour": 14,
+              "revenue": 1790700,
+              "tc": 70
+            },
+            {
+              "hour": 15,
+              "revenue": 1488500,
+              "tc": 75
+            },
+            {
+              "hour": 16,
+              "revenue": 1446850,
+              "tc": 69
+            },
+            {
+              "hour": 17,
+              "revenue": 1017400,
+              "tc": 49
+            },
+            {
+              "hour": 18,
+              "revenue": 1554200,
+              "tc": 67
+            },
+            {
+              "hour": 19,
+              "revenue": 3106070,
+              "tc": 119
+            },
+            {
+              "hour": 20,
+              "revenue": 4814720,
+              "tc": 153
+            },
+            {
+              "hour": 21,
+              "revenue": 4276060,
+              "tc": 140
+            },
+            {
+              "hour": 22,
+              "revenue": 2456410,
+              "tc": 81
+            },
+            {
+              "hour": 23,
+              "revenue": 807070,
+              "tc": 20
+            }
+          ],
+          "dow": [
+            {
+              "dow": 0,
+              "name": "월",
+              "avg_revenue": 990680,
+              "days": 4
+            },
+            {
+              "dow": 1,
+              "name": "화",
+              "avg_revenue": 970538,
+              "days": 4
+            },
+            {
+              "dow": 2,
+              "name": "수",
+              "avg_revenue": 950172,
+              "days": 4
+            },
+            {
+              "dow": 3,
+              "name": "목",
+              "avg_revenue": 1288950,
+              "days": 4
+            },
+            {
+              "dow": 4,
+              "name": "금",
+              "avg_revenue": 1317260,
+              "days": 5
+            },
+            {
+              "dow": 5,
+              "name": "토",
+              "avg_revenue": 1279234,
+              "days": 5
+            }
+          ]
+        }
+      }
     }
   }
 }
