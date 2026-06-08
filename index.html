@@ -294,9 +294,10 @@ const DOW_KOR = ['월','화','수','목','금','토','일'];
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let D = null;
-let activeStore = 'all';
-let activeView  = 'revenue';
-let activeCat   = 0;
+let activeStore  = 'all';
+let activeView   = 'revenue';
+let activeMonth  = null;
+let activeCat    = 0;
 let CH = {};
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -310,17 +311,30 @@ const fmt = n => {
 };
 const fmtWon = n => fmt(n) + '원';
 
+const getBS = () => {
+  const bm = activeMonth && D.by_month && D.by_month[activeMonth];
+  return bm ? bm.by_store : D.by_store;
+};
 const getSD = () => {
-  if (activeStore === 'all') return D.by_store.all;
+  const bs = getBS();
+  if (activeStore === 'all') return bs.all;
   const sn = ID2NAME[activeStore];
-  return D.by_store[sn] || D.by_store.all;
+  return bs[sn] || bs.all;
 };
 const getDaily = () => {
-  if (activeStore === 'all') return D.daily;
-  const sn = ID2NAME[activeStore];
-  return D.daily.filter(d => d.store === sn);
+  let daily = D.daily;
+  if (activeMonth) daily = daily.filter(d => d.date.startsWith(activeMonth));
+  if (activeStore !== 'all') {
+    const sn = ID2NAME[activeStore];
+    daily = daily.filter(d => d.store === sn);
+  }
+  return daily;
 };
-const getStoreInfo = () => activeStore === 'all' ? null : D.stores.find(s => s.id === activeStore);
+const getMonthlyStores = () => {
+  const bm = activeMonth && D.by_month && D.by_month[activeMonth];
+  return bm ? bm.stores : D.stores;
+};
+const getStoreInfo = () => activeStore === 'all' ? null : getMonthlyStores().find(s => s.id === activeStore);
 
 const destroyCharts = () => { Object.values(CH).forEach(c => c.destroy()); CH = {}; };
 
@@ -366,11 +380,32 @@ const updateNav = () => {
   const sc = STORES.find(s => s.id === activeStore);
   const vn = { revenue:'누적 매출현황', weekly:'주차별 분석', category:'카테고리 품목분석', pattern:'패턴분석' };
   $('bc').innerHTML = `${sc.name} / <b>${vn[activeView]}</b>`;
-  if (D) $('dateBadge').textContent = `${D.period.start} ~ ${D.period.end}`;
+  if (D) {
+    if (activeMonth && activeView !== 'weekly') {
+      const mo = parseInt(activeMonth.split('-')[1]);
+      $('dateBadge').textContent = `${activeMonth.split('-')[0]}년 ${mo}월`;
+    } else {
+      $('dateBadge').textContent = `${D.period.start} ~ ${D.period.end}`;
+    }
+  }
 };
 
 const setStore = sid => { activeStore = sid; activeCat = 0; updateNav(); render(); };
 const setView  = v   => { activeView  = v;               updateNav(); render(); };
+const setMonth = m   => { activeMonth = m;  activeCat = 0; updateNav(); render(); };
+
+const renderMonthSelector = () => {
+  if (!D || !D.by_month) return '';
+  const months = Object.keys(D.by_month).sort();
+  if (months.length === 0) return '';
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">${
+    months.map(m => {
+      const label = `${parseInt(m.split('-')[1])}월`;
+      const on = m === activeMonth;
+      return `<button onclick="setMonth('${m}')" style="padding:5px 14px;border-radius:20px;border:1px solid ${on?'var(--accent)':'var(--border)'};background:${on?'var(--accent)':'transparent'};color:${on?'#fff':'var(--text2)'};font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s">${label}</button>`;
+    }).join('')
+  }</div>`;
+};
 
 // ── RENDER DISPATCH ────────────────────────────────────────────────────────
 const render = () => {
@@ -396,12 +431,13 @@ const renderRevenue = () => {
   const atv       = totalTc > 0 ? Math.round(totalRev / totalTc) : 0;
   const achPct    = target > 0 ? (totalRev / (target * 10000) * 100).toFixed(1) : 0;
 
-  let html = '';
+  let html = renderMonthSelector();
 
   // 3-store comparison cards (전체 only)
-  if (activeStore === 'all' && D.stores.length > 0) {
+  const monthStores = getMonthlyStores();
+  if (activeStore === 'all' && monthStores.length > 0) {
     html += '<div class="store-cards">';
-    D.stores.forEach(s => {
+    monthStores.forEach(s => {
       html += `<div class="sc" onclick="setStore('${s.id}')">
         <div class="sc-head"><span class="sdot" style="background:${s.color}"></span><span class="sc-name">${s.name}</span></div>
         <div class="sc-rev" style="color:${s.color}">${fmt(s.revenue)}원</div>
@@ -719,7 +755,7 @@ const renderCategory = () => {
   const cats = sd.categories || [];
   const products = sd.products || [];
 
-  let html = `<div class="two-col">
+  let html = renderMonthSelector() + `<div class="two-col">
     <div class="chart-box">
       <div class="chart-box-title">카테고리별 매출 비중</div>
       <div class="donut-wrap">
@@ -823,7 +859,7 @@ const renderPattern = () => {
   const topHour = hourly.length ? [...hourly].sort((a,b) => b.revenue - a.revenue)[0] : null;
   const botHour = hourly.length ? [...hourly].sort((a,b) => a.revenue - b.revenue)[0] : null;
 
-  let html = `<div class="ins-strip">
+  let html = renderMonthSelector() + `<div class="ins-strip">
     <div class="ins"><div class="ins-icon">📅</div><div>
       <div class="ins-lbl">최고 매출 요일</div>
       <div class="ins-val" style="color:var(--amber)">${topDow ? topDow.name + '요일' : '--'}</div>
@@ -908,6 +944,10 @@ const startApp = async () => {
   try {
     D = await loadData();
     if (D.updated_at) $('updatedAt').textContent = '업데이트: ' + D.updated_at.slice(0, 16).replace('T', ' ');
+    if (D.by_month) {
+      const months = Object.keys(D.by_month).sort();
+      if (months.length > 0) activeMonth = months[months.length - 1];
+    }
     updateNav();
     render();
   } catch (e) {

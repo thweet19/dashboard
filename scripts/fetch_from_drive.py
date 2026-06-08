@@ -226,6 +226,57 @@ def compute_detail(df_pay, df_items, df_detail):
     return {'categories': categories, 'products': products, 'hourly': hourly, 'dow': dow}
 
 
+def compute_monthly(df_pay, df_items, df_detail):
+    """월별 stores + by_store 집계"""
+    dp = df_pay.copy()
+    di = df_items.copy()
+    dp['_month'] = dp['date'].dt.strftime('%Y-%m')
+    di['_month'] = pd.to_datetime(di['date'], errors='coerce').dt.strftime('%Y-%m')
+
+    months = sorted(dp['_month'].unique())
+    by_month = {}
+    for month in months:
+        mp = dp[dp['_month'] == month]
+        mi = di[di['_month'] == month]
+        md = pd.DataFrame()
+        if not df_detail.empty:
+            try:
+                dd = df_detail.copy()
+                dd['_month'] = pd.to_datetime(dd['date'], errors='coerce').dt.strftime('%Y-%m')
+                md = dd[dd['_month'] == month].drop(columns='_month')
+            except Exception:
+                pass
+
+        total_rev = int(mp['revenue'].sum())
+        stores_m = []
+        for fname, info in STORE_FOLDERS.items():
+            df_s = mp[mp['store'] == fname]
+            if df_s.empty:
+                continue
+            rev = int(df_s['revenue'].sum())
+            tc  = int(df_s['tc'].sum())
+            n   = max((df_s['date'].max() - df_s['date'].min()).days + 1, 1)
+            stores_m.append({
+                'id': info['id'], 'name': fname, 'color': info['color'],
+                'revenue': rev, 'tc': tc,
+                'daily_avg': round(rev / n),
+                'atv': round(rev / tc) if tc > 0 else 0,
+                'share': round(rev / total_rev * 100, 1) if total_rev > 0 else 0,
+            })
+
+        bstore_m = {'all': compute_detail(mp, mi, md)}
+        for fname in STORE_FOLDERS:
+            sp = mp[mp['store'] == fname]
+            si = mi[mi['store'] == fname]
+            sd = md[md['store'] == fname] if not md.empty else pd.DataFrame()
+            if not sp.empty:
+                bstore_m[fname] = compute_detail(sp, si, sd)
+
+        by_month[month] = {'stores': stores_m, 'by_store': bstore_m}
+
+    return by_month
+
+
 def compute_metrics(df_pay, df_items, df_detail):
     start = df_pay['date'].min().strftime('%Y-%m-%d')
     end   = df_pay['date'].max().strftime('%Y-%m-%d')
@@ -278,6 +329,7 @@ def compute_metrics(df_pay, df_items, df_detail):
         'stores': stores_out,
         'daily': daily_out,
         'by_store': by_store,
+        'by_month': compute_monthly(df_pay, df_items, df_detail),
     }
 
 
