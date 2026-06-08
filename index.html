@@ -234,6 +234,7 @@ tbody tr:hover td{background:var(--surface2);}
     <div class="sb-sec">
       <div class="sb-lbl">View</div>
       <button class="sb-btn view-btn active" data-view="revenue">누적 매출현황</button>
+      <button class="sb-btn view-btn" data-view="weekly">주차별 분석</button>
       <button class="sb-btn view-btn" data-view="category">카테고리 품목분석</button>
       <button class="sb-btn view-btn" data-view="pattern">패턴분석</button>
     </div>
@@ -261,6 +262,7 @@ tbody tr:hover td{background:var(--surface2);}
         <span class="live-badge">● LIVE</span>
         <div class="vtabs">
           <button class="vtab active" data-view="revenue">매출</button>
+          <button class="vtab" data-view="weekly">주차별</button>
           <button class="vtab" data-view="category">카테고리</button>
           <button class="vtab" data-view="pattern">패턴</button>
         </div>
@@ -362,7 +364,7 @@ const updateNav = () => {
   qsa('.store-btn, .bn').forEach(b => b.classList.toggle('active', b.dataset.store === activeStore));
   qsa('.view-btn, .vtab').forEach(b => b.classList.toggle('active', b.dataset.view === activeView));
   const sc = STORES.find(s => s.id === activeStore);
-  const vn = { revenue:'누적 매출현황', category:'카테고리 품목분석', pattern:'패턴분석' };
+  const vn = { revenue:'누적 매출현황', weekly:'주차별 분석', category:'카테고리 품목분석', pattern:'패턴분석' };
   $('bc').innerHTML = `${sc.name} / <b>${vn[activeView]}</b>`;
   if (D) $('dateBadge').textContent = `${D.period.start} ~ ${D.period.end}`;
 };
@@ -375,6 +377,7 @@ const render = () => {
   destroyCharts();
   if (!D) { $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div><div class="empty-sub">Google Drive에 파일을 업로드하고 Actions를 실행해주세요</div></div>'; return; }
   if      (activeView === 'revenue')  renderRevenue();
+  else if (activeView === 'weekly')   renderWeekly();
   else if (activeView === 'category') renderCategory();
   else                                renderPattern();
 };
@@ -561,7 +564,148 @@ const drawLineChart = (daily, dates, targetWon, storeColor) => {
   }
 };
 
-// ── TAB 2: CATEGORY ────────────────────────────────────────────────────────
+// ── TAB 2: WEEKLY ─────────────────────────────────────────────────────────
+const getWeekKey = dateStr => {
+  const d = new Date(dateStr);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diff);
+  return mon.toISOString().slice(0, 10);
+};
+
+const getWeekLabel = monDate => {
+  const d = new Date(monDate);
+  const sun = new Date(d);
+  sun.setDate(d.getDate() + 6);
+  return `${d.getMonth()+1}/${d.getDate()}~${sun.getMonth()+1}/${sun.getDate()}`;
+};
+
+const buildWeekly = daily => {
+  const map = {};
+  daily.forEach(d => {
+    const wk = getWeekKey(d.date);
+    if (!map[wk]) map[wk] = { revenue: 0, tc: 0, by_store: {} };
+    map[wk].revenue += d.revenue;
+    map[wk].tc += d.tc;
+    if (!map[wk].by_store[d.store]) map[wk].by_store[d.store] = { revenue: 0, tc: 0 };
+    map[wk].by_store[d.store].revenue += d.revenue;
+    map[wk].by_store[d.store].tc += d.tc;
+  });
+  return Object.entries(map).sort((a, b) => a[0] < b[0] ? -1 : 1);
+};
+
+const renderWeekly = () => {
+  const daily = getDaily();
+  const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
+  const weeks = buildWeekly(daily);
+  const n = weeks.length;
+
+  if (n === 0) {
+    $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div></div>';
+    return;
+  }
+
+  const thisW = weeks[n - 1][1];
+  const prevW = n > 1 ? weeks[n - 2][1] : null;
+  const wow = prevW ? (thisW.revenue - prevW.revenue) / prevW.revenue * 100 : null;
+  const wowAbs = prevW ? thisW.revenue - prevW.revenue : null;
+  const weekAvg = Math.round(weeks.reduce((s, w) => s + w[1].revenue, 0) / n);
+  const bestWeek = [...weeks].sort((a, b) => b[1].revenue - a[1].revenue)[0];
+
+  const wowColor = wow === null ? 'var(--text2)' : wow >= 0 ? 'var(--green)' : 'var(--red)';
+
+  let html = `<div class="kpi-strip">
+    <div class="kpi"><div class="kpi-lbl">이번 주 매출</div><div class="kpi-val">${fmt(thisW.revenue)}원</div><div class="kpi-sub">${getWeekLabel(weeks[n-1][0])}</div></div>
+    <div class="kpi"><div class="kpi-lbl">전주 대비</div><div class="kpi-val" style="color:${wowColor}">${wow !== null ? (wow >= 0 ? '+' : '') + wow.toFixed(1) + '%' : '--'}</div><div class="kpi-sub">${wowAbs !== null ? (wowAbs >= 0 ? '+' : '') + fmt(wowAbs) + '원' : '비교 데이터 없음'}</div></div>
+    <div class="kpi"><div class="kpi-lbl">주 평균 매출</div><div class="kpi-val">${fmt(weekAvg)}원</div><div class="kpi-sub">${n}주 기준</div></div>
+    <div class="kpi"><div class="kpi-lbl">최고 매출 주차</div><div class="kpi-val" style="color:var(--amber)">${fmt(bestWeek[1].revenue)}원</div><div class="kpi-sub">${getWeekLabel(bestWeek[0])}</div></div>
+    <div class="kpi"><div class="kpi-lbl">이번 주 결제건수</div><div class="kpi-val">${thisW.tc.toLocaleString()}건</div><div class="kpi-sub">객단가 ${thisW.tc > 0 ? Math.round(thisW.revenue/thisW.tc).toLocaleString() : '--'}원</div></div>
+  </div>`;
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">📊 주차별 매출 현황</div><div class="sec-note">${n}주 데이터</div></div>
+    <div class="chart-h260"><canvas id="weeklyChart"></canvas></div>
+    <div class="legend" id="weeklyLegend"></div>
+  </div>`;
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">📋 주차별 상세 현황</div></div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>주차</th><th>매출</th><th>결제건수</th><th>객단가</th><th>전주 대비</th>
+    </tr></thead><tbody>`;
+
+  weeks.forEach(([mon, wdata], i) => {
+    const prev = i > 0 ? weeks[i-1][1] : null;
+    const pct = prev ? (wdata.revenue - prev.revenue) / prev.revenue * 100 : null;
+    const isBest = mon === bestWeek[0];
+    const isLatest = i === n - 1;
+    const pctColor = pct === null ? 'var(--text3)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
+    const pctLabel = pct !== null ? (pct >= 0 ? '▲ ' : '▼ ') + Math.abs(pct).toFixed(1) + '%' : '--';
+    html += `<tr>
+      <td class="mono">${getWeekLabel(mon)}${isLatest ? ' <span class="badge bd-new">이번주</span>' : ''}${isBest ? ' <span class="badge" style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px">최고</span>' : ''}</td>
+      <td class="mono">${wdata.revenue.toLocaleString()}</td>
+      <td class="mono">${wdata.tc}건</td>
+      <td class="mono">${wdata.tc > 0 ? Math.round(wdata.revenue/wdata.tc).toLocaleString() : '-'}원</td>
+      <td class="mono" style="color:${pctColor}">${pctLabel}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div></div>';
+
+  $('content').innerHTML = html;
+
+  setTimeout(() => {
+    const labels = weeks.map(([mon]) => getWeekLabel(mon));
+    let datasets = [];
+
+    if (activeStore === 'all') {
+      D.stores.forEach(s => {
+        datasets.push({
+          label: s.name,
+          data: weeks.map(([, wd]) => Math.round((wd.by_store[s.name]?.revenue || 0) / 10000)),
+          backgroundColor: s.color + 'CC',
+          borderColor: s.color,
+          borderWidth: 0,
+          stack: 'w',
+          borderRadius: 4,
+        });
+      });
+    } else {
+      datasets.push({
+        label: '주간 매출',
+        data: weeks.map(([, wd]) => Math.round(wd.revenue / 10000)),
+        backgroundColor: storeColor + 'CC',
+        borderColor: storeColor,
+        borderWidth: 0,
+        stack: 'w',
+        borderRadius: 4,
+      });
+    }
+
+    CH.weekly = new Chart($('weeklyChart'), {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        ...chartDefaults,
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          ...chartDefaults.plugins,
+          tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` } },
+        },
+        scales: {
+          x: { ...chartDefaults.scales.x, stacked: true },
+          y: { ...chartDefaults.scales.y, stacked: true, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + '만' } },
+        },
+      },
+    });
+
+    const leg = $('weeklyLegend');
+    if (leg) leg.innerHTML = datasets.map(ds => `<div class="leg"><span class="leg-dot" style="background:${ds.borderColor}"></span>${ds.label}</div>`).join('');
+  }, 0);
+};
+
+// ── TAB 3: CATEGORY ────────────────────────────────────────────────────────
 const renderCategory = () => {
   const sd = getSD();
   const cats = sd.categories || [];
