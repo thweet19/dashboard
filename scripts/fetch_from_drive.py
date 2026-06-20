@@ -159,7 +159,10 @@ def parse_pos_file(buf, store_name):
         _raw = read_excel(buf, sheet_name=sheet_item_detail, header=0, skiprows=[1],
                           usecols=[0, 1, 5, 7, 11, 12])
         _raw.columns = ['date', 'status', 'product', 'category', 'cnt', 'price']
-        _raw = _raw[_raw['status'].astype(str).str.strip() == '완료'].copy()
+        statuses = _raw['status'].astype(str).str.strip().unique()
+        print(f'     ℹ️  상품 상태값: {list(statuses)}')
+        cancel_kw = {'취소', '환불', '부분취소', '결제취소', 'cancel'}
+        _raw = _raw[~_raw['status'].astype(str).str.strip().str.lower().isin({s.lower() for s in cancel_kw})].copy()
         _raw['date'] = pd.to_datetime(_raw['date'], errors='coerce')
         _raw = _raw.dropna(subset=['date', 'product', 'category'])
         _raw['cnt'] = pd.to_numeric(_raw['cnt'], errors='coerce').fillna(1)
