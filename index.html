@@ -417,11 +417,26 @@ const render = () => {
   else                                renderPattern();
 };
 
+// ── NO DATA FOR MONTH HELPER ───────────────────────────────────────────────
+const noMonthDataHtml = () => {
+  const avail = D.by_month ? Object.keys(D.by_month).sort() : [];
+  const btns = avail.map(m => {
+    const label = `${parseInt(m.split('-')[1])}월`;
+    return `<button onclick="setMonth('${m}')" style="padding:6px 16px;border-radius:20px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;margin:4px">${label}</button>`;
+  }).join('');
+  return `${renderMonthSelector()}<div class="empty"><div class="empty-title">이 월에는 데이터가 없습니다</div><div class="empty-sub" style="margin-top:12px">${btns}</div></div>`;
+};
+
 // ── TAB 1: REVENUE ─────────────────────────────────────────────────────────
 const renderRevenue = () => {
   const daily  = getDaily();
   const target = TARGETS[activeStore];
   const si     = getStoreInfo();
+
+  if (activeMonth && daily.length === 0) {
+    $('content').innerHTML = noMonthDataHtml();
+    return;
+  }
 
   const totalRev  = daily.reduce((s,d) => s + d.revenue, 0);
   const totalTc   = daily.reduce((s,d) => s + d.tc, 0);
@@ -639,13 +654,18 @@ const buildWeekly = daily => {
 };
 
 const renderWeekly = () => {
-  const daily = getDaily();
+  // 주차별은 월 필터 없이 전체 기간 사용
+  let daily = D.daily;
+  if (activeStore !== 'all') {
+    const sn = ID2NAME[activeStore];
+    daily = D.daily.filter(d => d.store === sn);
+  }
   const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
   const weeks = buildWeekly(daily);
   const n = weeks.length;
 
   if (n === 0) {
-    $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div></div>';
+    $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div><div class="empty-sub">Google Drive에 파일을 업로드하고 Actions를 실행해주세요</div></div>';
     return;
   }
 
@@ -751,6 +771,7 @@ const renderWeekly = () => {
 
 // ── TAB 3: CATEGORY ────────────────────────────────────────────────────────
 const renderCategory = () => {
+  if (activeMonth && getDaily().length === 0) { $('content').innerHTML = noMonthDataHtml(); return; }
   const sd = getSD();
   const cats = sd.categories || [];
   const products = sd.products || [];
@@ -851,6 +872,7 @@ const renderRankGrid = (cat, products) => {
 
 // ── TAB 3: PATTERN ─────────────────────────────────────────────────────────
 const renderPattern = () => {
+  if (activeMonth && getDaily().length === 0) { $('content').innerHTML = noMonthDataHtml(); return; }
   const sd = getSD();
   const dow = sd.dow || [];
   const hourly = sd.hourly || [];
