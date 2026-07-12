@@ -241,13 +241,6 @@ def parse_pos_file(buf, store_name):
         _raw['store'] = store_name
         df_items = _raw[['date', 'order_id', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
 
-        # ── 날짜 보정: 주문기준일자 → 결제기준일자 (심야 영업 월 경계 오류 방지) ──
-        if order_pay_date:
-            _mapped = df_items['order_id'].astype(str).map(order_pay_date)
-            matched = _mapped.notna().sum()
-            df_items['date'] = _mapped.combine_first(df_items['date'])
-            print(f'     🔗 날짜 보정: {matched}/{len(df_items)}행 결제기준일자로 교체')
-
         cat_sum = df_items.groupby('category')['actual_price'].sum().sort_values(ascending=False)
         print(f'     📊 카테고리별 매출합계(실판매금액 기준):\n{cat_sum.to_string()}')
         print(f'     ✅ 상품 상세내역: {len(df_items)}행, 총합={int(df_items["actual_price"].sum()):,}원')
