@@ -174,6 +174,8 @@ def parse_pos_file(buf, store_name):
     # ── 결제 상세내역 (모든 파일에서 잘 읽힘) ──────────────────────────
     df_detail = pd.DataFrame()
     try:
+        _det_hdr = read_excel(buf, sheet_name=sheet_detail, header=0, nrows=0)
+        print(f'     📋 결제상세내역 컬럼({len(_det_hdr.columns)}개): {list(_det_hdr.columns)}')
         df_detail = read_excel(buf, sheet_name=sheet_detail, header=0, skiprows=[1], usecols=[0, 1, 5, 7, 9])
         df_detail.columns = ['date', 'time', 'revenue', 'method', 'status']
         df_detail = df_detail.dropna(subset=['date']).copy()
