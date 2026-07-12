@@ -249,6 +249,18 @@ def parse_pos_file(buf, store_name):
         print(f'     ❌ 상품 상세내역 파싱 실패: {e}')
         print(traceback.format_exc())
 
+    # 상품에 결제기준일 추가 — 3일 이내 차이일 때만 교체 (주문번호 월별 리셋 대비)
+    if not df_items.empty:
+        if order_pay_date:
+            _mapped  = df_items['order_id'].astype(str).map(order_pay_date)
+            _item_dt = pd.to_datetime(df_items['date'], errors='coerce')
+            _valid   = _mapped.notna() & ((_mapped - _item_dt).abs() <= pd.Timedelta(days=3))
+            df_items['pay_date'] = df_items['date'].copy()
+            df_items.loc[_valid, 'pay_date'] = _mapped[_valid]
+            print(f'     📅 결제일 매핑: {int(_valid.sum())}/{len(df_items)}행 교체 (3일 이내)')
+        else:
+            df_items['pay_date'] = df_items['date']
+
     print(f'     📊 최종: 결제합계={len(df_pay)}행, 상품={len(df_items)}행, 상세={len(df_detail)}행')
     return df_pay, df_items, df_detail
 
@@ -307,7 +319,9 @@ def compute_monthly(df_pay, df_items, df_detail):
     dp = df_pay.copy()
     di = df_items.copy()
     dp['_month'] = dp['date'].dt.strftime('%Y-%m')
-    di['_month'] = pd.to_datetime(di['date'], errors='coerce').dt.strftime('%Y-%m')
+    # pay_date: 결제기준일(3일 이내 매핑) 우선, 없으면 주문기준일 — 결제합계와 월 경계 일치
+    _date_col = 'pay_date' if 'pay_date' in di.columns else 'date'
+    di['_month'] = pd.to_datetime(di[_date_col], errors='coerce').dt.strftime('%Y-%m')
 
     months = sorted(dp['_month'].unique())
     by_month = {}
