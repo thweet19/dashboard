@@ -776,13 +776,17 @@ const renderCategory = () => {
   const sd = getSD();
   const cats = sd.categories || [];
   const products = sd.products || [];
+  const actualTotal = getDaily().reduce((s,d) => s+d.revenue, 0);
+  const catTotal = cats.reduce((s,c) => s+c.revenue, 0);
+  const coveragePct = actualTotal > 0 ? Math.round(catTotal / actualTotal * 100) : 0;
+  const catsAdj = cats.map(c => ({...c, adjShare: actualTotal > 0 ? +(c.revenue / actualTotal * 100).toFixed(1) : (c.share || 0)}));
 
   let html = renderMonthSelector() + `<div class="two-col">
     <div class="chart-box">
       <div class="chart-box-title">카테고리별 매출 비중</div>
       <div class="donut-wrap">
         <canvas id="donutChart"></canvas>
-        <div class="donut-center"><div class="dv">${fmt(cats.reduce((s,c) => s+c.revenue, 0))}원</div><div class="dl">총 매출</div></div>
+        <div class="donut-center"><div class="dv">${fmt(actualTotal)}원</div><div class="dl">총 매출</div><div style="font-size:10px;color:var(--text3);margin-top:2px">상품분석 ${coveragePct}%</div></div>
       </div>
       <div id="donutLegend"></div>
     </div>
@@ -802,21 +806,21 @@ const renderCategory = () => {
 
   setTimeout(() => {
     // Donut
-    const colors = cats.map(c => CAT_COLORS[c.name] || '#9090A8');
+    const colors = catsAdj.map(c => CAT_COLORS[c.name] || '#9090A8');
     CH.donut = new Chart($('donutChart'), {
       type: 'doughnut',
-      data: { labels: cats.map(c => c.name), datasets: [{ data: cats.map(c => c.pct || c.share), backgroundColor: colors, borderColor:'#111118', borderWidth:3, hoverOffset:5 }] },
+      data: { labels: catsAdj.map(c => c.name), datasets: [{ data: catsAdj.map(c => c.adjShare), backgroundColor: colors, borderColor:'#111118', borderWidth:3, hoverOffset:5 }] },
       options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{display:false}, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label: c => ` ${c.label}: ${c.parsed}%` } } } },
     });
 
     // Donut legend
     const dl = $('donutLegend');
-    if (dl) dl.innerHTML = cats.map(c => `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${CAT_COLORS[c.name]||'#9090A8'}"></span>${c.name}</div><div class="dl-right">${(c.share||0).toFixed(1)}%</div></div>`).join('');
+    if (dl) dl.innerHTML = catsAdj.map(c => `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${CAT_COLORS[c.name]||'#9090A8'}"></span>${c.name}</div><div class="dl-right">${c.adjShare.toFixed(1)}%</div></div>`).join('');
 
     // Horizontal bar
     CH.hbar = new Chart($('hbarChart'), {
       type: 'bar',
-      data: { labels: cats.map(c => c.name), datasets: [{ data: cats.map(c => c.cnt), backgroundColor: colors.map(c => c + 'CC'), borderColor: colors, borderWidth:1, borderRadius:4 }] },
+      data: { labels: catsAdj.map(c => c.name), datasets: [{ data: catsAdj.map(c => c.cnt), backgroundColor: colors.map(c => c + 'CC'), borderColor: colors, borderWidth:1, borderRadius:4 }] },
       options: { ...chartDefaults, indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ ...chartDefaults.plugins, tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label:c=>` ${c.parsed.x.toLocaleString()}건` } } }, scales:{ x:{...chartDefaults.scales.x}, y:{grid:{display:false}, ticks:{color:'#9090A8',font:{size:10}}} } },
     });
 
