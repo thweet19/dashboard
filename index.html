@@ -906,7 +906,7 @@ const renderCategory = () => {
   const actualTotal = getDaily().reduce((s,d) => s+d.revenue, 0);
   const catTotal = cats.reduce((s,c) => s+c.revenue, 0);
   const coveragePct = actualTotal > 0 ? Math.round(catTotal / actualTotal * 100) : 0;
-  const catsAdj = cats.map(c => ({...c, adjShare: actualTotal > 0 ? +(c.revenue / actualTotal * 100).toFixed(1) : (c.share || 0)}));
+  const catsAdj = cats.map(c => ({...c, adjShare: catTotal > 0 ? +(c.revenue / catTotal * 100).toFixed(1) : (c.share || 0)}));
 
   let html = renderMonthSelector() + `<div class="two-col">
     <div class="chart-box">
