@@ -921,21 +921,16 @@ const renderCategory = () => {
   const sd = getSD();
   const cats = sd.categories || [];
   const products = sd.products || [];
-  const actualTotal = getDaily().reduce((s,d) => s+d.revenue, 0);
   const catTotal = cats.reduce((s,c) => s+c.revenue, 0);
-  const gap = actualTotal - catTotal;
-  const UNCAT_COLOR = '#3a3a52';
-  const catsAdj = cats.map(c => ({...c, adjShare: actualTotal > 0 ? +(c.revenue / actualTotal * 100).toFixed(1) : 0}));
-  const allSlices = gap > actualTotal * 0.01
-    ? [...catsAdj, { name: '미분류(POS 상품 미선택)', revenue: gap, adjShare: actualTotal > 0 ? +(gap / actualTotal * 100).toFixed(1) : 0, cnt: 0 }]
-    : catsAdj;
+  const catsAdj = cats.map(c => ({...c, adjShare: catTotal > 0 ? +(c.revenue / catTotal * 100).toFixed(1) : 0}));
+  const allSlices = catsAdj;
 
   let html = renderMonthSelector() + `<div class="two-col">
     <div class="chart-box">
-      <div class="chart-box-title">카테고리별 매출 비중</div>
+      <div class="chart-box-title">카테고리별 매출 비중 <span style="font-size:11px;color:var(--text3);font-weight:400">※ 주문일 기준</span></div>
       <div class="donut-wrap">
         <canvas id="donutChart"></canvas>
-        <div class="donut-center"><div class="dv">${fmt(actualTotal)}원</div><div class="dl">총 매출</div></div>
+        <div class="donut-center"><div class="dv">${fmt(catTotal)}원</div><div class="dl">카테고리 매출</div></div>
       </div>
       <div id="donutLegend"></div>
     </div>
@@ -955,7 +950,7 @@ const renderCategory = () => {
 
   setTimeout(() => {
     // Donut
-    const colors = allSlices.map(c => c.name.startsWith('미분류') ? UNCAT_COLOR : (CAT_COLORS[c.name] || '#9090A8'));
+    const colors = allSlices.map(c => CAT_COLORS[c.name] || '#9090A8');
     CH.donut = new Chart($('donutChart'), {
       type: 'doughnut',
       data: { labels: allSlices.map(c => c.name), datasets: [{ data: allSlices.map(c => c.adjShare), backgroundColor: colors, borderColor:'#111118', borderWidth:3, hoverOffset:5 }] },
@@ -964,11 +959,9 @@ const renderCategory = () => {
 
     // Donut legend
     const dl = $('donutLegend');
-    if (dl) dl.innerHTML = allSlices.map(c => {
-      const col = c.name.startsWith('미분류') ? UNCAT_COLOR : (CAT_COLORS[c.name] || '#9090A8');
-      const revenueStyle = c.name.startsWith('미분류') ? 'color:#555566;font-size:11px' : 'color:var(--text3);font-size:11px';
-      const pctStyle = c.name.startsWith('미분류') ? 'min-width:38px;text-align:right;color:#555566' : 'min-width:38px;text-align:right';
-      return `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${col}"></span><span style="${c.name.startsWith('미분류')?'color:#555566':''}">${c.name}</span></div><div class="dl-right" style="display:flex;gap:10px;align-items:center"><span style="${revenueStyle}">${fmt(c.revenue)}원</span><span style="${pctStyle}">${c.adjShare.toFixed(1)}%</span></div></div>`;
+    if (dl) dl.innerHTML = allSlices.map((c, i) => {
+      const col = colors[i];
+      return `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${col}"></span><span>${c.name}</span></div><div class="dl-right" style="display:flex;gap:10px;align-items:center"><span style="color:var(--text3);font-size:11px">${fmt(c.revenue)}원</span><span style="min-width:38px;text-align:right">${c.adjShare.toFixed(1)}%</span></div></div>`;
     }).join('');
 
     // Horizontal bar
