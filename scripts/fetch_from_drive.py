@@ -113,7 +113,7 @@ EXPECTED_ITEM_COLS = {
     5:  ['상품명', '상품'],
     7:  ['카테고리'],
     11: ['수량'],
-    12: ['가격'],
+    16: ['실판매금액', '판매금액'],
 }
 
 
@@ -215,12 +215,13 @@ def parse_pos_file(buf, store_name):
         print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
 
     # ── 상품 주문 상세내역 RAW 데이터로 파싱 (모든 파일 공통) ──────────
-    # 컬럼: A(0)주문기준일자, B(1)결제상태, E(4)주문번호, F(5)상품명, H(7)카테고리, L(11)수량, M(12)상품가격
+    # 컬럼: A(0)주문기준일자, B(1)결제상태, E(4)주문번호, F(5)상품명, H(7)카테고리,
+    #       L(11)수량, Q(16)실판매금액(할인+옵션 포함)
     df_items = pd.DataFrame()
     try:
         _raw = read_excel(buf, sheet_name=sheet_item_detail, header=0, skiprows=[1],
-                          usecols=[0, 1, 4, 5, 7, 11, 12])
-        _raw.columns = ['date', 'status', 'order_id', 'product', 'category', 'cnt', 'price']
+                          usecols=[0, 1, 4, 5, 7, 11, 16])
+        _raw.columns = ['date', 'status', 'order_id', 'product', 'category', 'cnt', 'actual_price']
         statuses = _raw['status'].astype(str).str.strip().unique()
         print(f'     ℹ️  상품 상태값: {list(statuses)}')
         cancel_kw = {'취소', '환불', '부분취소', '결제취소', 'cancel'}
@@ -228,12 +229,11 @@ def parse_pos_file(buf, store_name):
         _raw['date'] = pd.to_datetime(_raw['date'], errors='coerce')
         _raw = _raw.dropna(subset=['date', 'product', 'category'])
         _raw['cnt'] = pd.to_numeric(_raw['cnt'], errors='coerce').fillna(1)
-        _raw['price'] = pd.to_numeric(_raw['price'], errors='coerce').fillna(0)
-        _raw['actual_price'] = _raw['price'] * _raw['cnt']
+        _raw['actual_price'] = pd.to_numeric(_raw['actual_price'], errors='coerce').fillna(0)
         _raw['store'] = store_name
         df_items = _raw[['date', 'order_id', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
         cat_sum = df_items.groupby('category')['actual_price'].sum().sort_values(ascending=False)
-        print(f'     📊 카테고리별 매출합계:\n{cat_sum.to_string()}')
+        print(f'     📊 카테고리별 매출합계(실판매금액 기준):\n{cat_sum.to_string()}')
         print(f'     ✅ 상품 상세내역: {len(df_items)}행, 총합={int(df_items["actual_price"].sum()):,}원')
     except Exception as e:
         import traceback
