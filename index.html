@@ -797,7 +797,7 @@ const renderCategory = () => {
   </div>`;
 
   html += `<div class="section">
-    <div class="sec-head"><div class="sec-title">카테고리별 Top 3 · Bottom 3</div></div>
+    <div class="sec-head"><div class="sec-title">카테고리별 Top 10 · Bottom 10</div></div>
     <div class="cat-tabs" id="catTabs"></div>
     <div class="rank-grid" id="rankGrid"></div>
   </div>`;
@@ -849,15 +849,15 @@ const renderRankGrid = (cat, products) => {
   if (!rg || !cat) return;
   const col = CAT_COLORS[cat.name] || '#9090A8';
   const catProds = products.filter(p => p.category === cat.name).sort((a,b) => b.cnt - a.cnt);
-  const top3 = catProds.slice(0, 3);
-  const bot3 = [...catProds].sort((a,b) => a.cnt - b.cnt).slice(0, 3);
-  const maxT = top3[0]?.cnt || 1;
-  const maxB = bot3[bot3.length-1]?.cnt || 1;
+  const top10 = catProds.slice(0, 10);
+  const bot10 = [...catProds].sort((a,b) => a.cnt - b.cnt).slice(0, 10);
+  const maxT = top10[0]?.cnt || 1;
+  const maxB = bot10[bot10.length-1]?.cnt || 1;
 
   rg.innerHTML = `
     <div class="rank-box">
-      <div class="rank-title" style="color:${col}">🏆 Top 3 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
-      ${top3.map((p,i) => `<div class="rank-item">
+      <div class="rank-title" style="color:${col}">🏆 Top 10 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
+      ${top10.map((p,i) => `<div class="rank-item">
         <span class="rank-num" style="color:${col}">${i+1}</span>
         <span class="rank-name">${p.name}</span>
         <div class="rank-bar"><div class="rank-fill" style="width:${(p.cnt/maxT*100).toFixed(0)}%;background:${col}"></div></div>
@@ -865,8 +865,8 @@ const renderRankGrid = (cat, products) => {
       </div>`).join('')}
     </div>
     <div class="rank-box">
-      <div class="rank-title" style="color:var(--text3)">💀 Bottom 3 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
-      ${bot3.map((p,i) => `<div class="rank-item">
+      <div class="rank-title" style="color:var(--text3)">💀 Bottom 10 &nbsp;<span style="color:var(--text3);font-weight:400">${cat.name}</span></div>
+      ${bot10.map((p,i) => `<div class="rank-item">
         <span class="rank-num" style="color:var(--text3)">${i+1}</span>
         <span class="rank-name">${p.name}</span>
         <div class="rank-bar"><div class="rank-fill" style="width:${(p.cnt/maxB*100).toFixed(0)}%;background:var(--text3)"></div></div>
