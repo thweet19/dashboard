@@ -235,6 +235,7 @@ tbody tr:hover td{background:var(--surface2);}
       <div class="sb-lbl">View</div>
       <button class="sb-btn view-btn active" data-view="revenue">일별 매출분석</button>
       <button class="sb-btn view-btn" data-view="weekly">주차별 매출분석</button>
+      <button class="sb-btn view-btn" data-view="monthly">월별 매출분석</button>
       <button class="sb-btn view-btn" data-view="category">카테고리 분석</button>
       <button class="sb-btn view-btn" data-view="pattern">결제패턴 분석</button>
     </div>
@@ -263,6 +264,7 @@ tbody tr:hover td{background:var(--surface2);}
         <div class="vtabs">
           <button class="vtab active" data-view="revenue">일별</button>
           <button class="vtab" data-view="weekly">주차별</button>
+          <button class="vtab" data-view="monthly">월별</button>
           <button class="vtab" data-view="category">카테고리</button>
           <button class="vtab" data-view="pattern">패턴</button>
         </div>
@@ -378,10 +380,10 @@ const updateNav = () => {
   qsa('.store-btn, .bn').forEach(b => b.classList.toggle('active', b.dataset.store === activeStore));
   qsa('.view-btn, .vtab').forEach(b => b.classList.toggle('active', b.dataset.view === activeView));
   const sc = STORES.find(s => s.id === activeStore);
-  const vn = { revenue:'일별 매출분석', weekly:'주차별 매출분석', category:'카테고리 분석', pattern:'결제패턴 분석' };
+  const vn = { revenue:'일별 매출분석', weekly:'주차별 매출분석', monthly:'월별 매출분석', category:'카테고리 분석', pattern:'결제패턴 분석' };
   $('bc').innerHTML = `${sc.name} / <b>${vn[activeView]}</b>`;
   if (D) {
-    if (activeMonth && activeView !== 'weekly') {
+    if (activeMonth && activeView !== 'weekly' && activeView !== 'monthly') {
       const mo = parseInt(activeMonth.split('-')[1]);
       $('dateBadge').textContent = `${activeMonth.split('-')[0]}년 ${mo}월`;
     } else {
@@ -413,6 +415,7 @@ const render = () => {
   if (!D) { $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div><div class="empty-sub">Google Drive에 파일을 업로드하고 Actions를 실행해주세요</div></div>'; return; }
   if      (activeView === 'revenue')  renderRevenue();
   else if (activeView === 'weekly')   renderWeekly();
+  else if (activeView === 'monthly')  renderMonthly();
   else if (activeView === 'category') renderCategory();
   else                                renderPattern();
 };
@@ -766,6 +769,130 @@ const renderWeekly = () => {
     });
 
     const leg = $('weeklyLegend');
+    if (leg) leg.innerHTML = datasets.map(ds => `<div class="leg"><span class="leg-dot" style="background:${ds.borderColor}"></span>${ds.label}</div>`).join('');
+  }, 0);
+};
+
+// ── TAB 2.5: MONTHLY ───────────────────────────────────────────────────────
+const renderMonthly = () => {
+  if (!D || !D.by_month) {
+    $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div><div class="empty-sub">Google Drive에 파일을 업로드하고 Actions를 실행해주세요</div></div>';
+    return;
+  }
+  const months = Object.keys(D.by_month).sort();
+  if (months.length === 0) {
+    $('content').innerHTML = '<div class="empty"><div class="empty-title">데이터 없음</div></div>';
+    return;
+  }
+
+  const getMonthData = m => {
+    const bm = D.by_month[m];
+    if (!bm) return { revenue: 0, tc: 0, atv: 0 };
+    if (activeStore === 'all') {
+      const rev = bm.stores.reduce((s, st) => s + st.revenue, 0);
+      const tc  = bm.stores.reduce((s, st) => s + st.tc,      0);
+      return { revenue: rev, tc, atv: tc > 0 ? Math.round(rev / tc) : 0 };
+    } else {
+      const st = bm.stores.find(s => s.id === activeStore);
+      if (!st) return { revenue: 0, tc: 0, atv: 0 };
+      return { revenue: st.revenue, tc: st.tc, atv: st.atv || (st.tc > 0 ? Math.round(st.revenue / st.tc) : 0) };
+    }
+  };
+
+  const rows = months.map((m, i) => {
+    const d    = getMonthData(m);
+    const prev = i > 0 ? getMonthData(months[i - 1]) : null;
+    const mom    = prev && prev.revenue > 0 ? (d.revenue - prev.revenue) / prev.revenue * 100 : null;
+    const momAbs = prev ? d.revenue - prev.revenue : null;
+    return { month: m, ...d, mom, momAbs };
+  });
+
+  const n        = rows.length;
+  const latest   = rows[n - 1];
+  const monthAvg = Math.round(rows.reduce((s, r) => s + r.revenue, 0) / n);
+  const best     = [...rows].sort((a, b) => b.revenue - a.revenue)[0];
+  const storeColor = STORES.find(s => s.id === activeStore)?.color || '#F59E0B';
+  const momColor   = latest.mom === null ? 'var(--text2)' : latest.mom >= 0 ? 'var(--green)' : 'var(--red)';
+  const ml = m => `${parseInt(m.split('-')[1])}월`;
+
+  let html = `<div class="kpi-strip">
+    <div class="kpi"><div class="kpi-lbl">이번 달 매출</div><div class="kpi-val">${fmt(latest.revenue)}원</div><div class="kpi-sub">${latest.month.replace('-','년 ')}월</div></div>
+    <div class="kpi"><div class="kpi-lbl">전월 대비</div><div class="kpi-val" style="color:${momColor}">${latest.mom !== null ? (latest.mom >= 0 ? '+' : '') + latest.mom.toFixed(1) + '%' : '--'}</div><div class="kpi-sub">${latest.momAbs !== null ? (latest.momAbs >= 0 ? '+' : '') + fmt(latest.momAbs) + '원' : '비교 데이터 없음'}</div></div>
+    <div class="kpi"><div class="kpi-lbl">월 평균 매출</div><div class="kpi-val">${fmt(monthAvg)}원</div><div class="kpi-sub">${n}개월 기준</div></div>
+    <div class="kpi"><div class="kpi-lbl">최고 매출 월</div><div class="kpi-val" style="color:var(--amber)">${fmt(best.revenue)}원</div><div class="kpi-sub">${best.month.replace('-','년 ')}월</div></div>
+    <div class="kpi"><div class="kpi-lbl">이번 달 결제건수</div><div class="kpi-val">${latest.tc.toLocaleString()}건</div><div class="kpi-sub">객단가 ${latest.atv.toLocaleString()}원</div></div>
+  </div>`;
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">📊 월별 매출 현황</div><div class="sec-note">${n}개월 데이터</div></div>
+    <div class="chart-h260"><canvas id="monthlyChart"></canvas></div>
+    <div class="legend" id="monthlyLegend"></div>
+  </div>`;
+
+  html += `<div class="section">
+    <div class="sec-head"><div class="sec-title">📋 월별 상세 현황</div></div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>월</th><th>총 결제건수</th><th>총매출</th><th>객단가</th><th>전월 대비</th>
+    </tr></thead><tbody>`;
+
+  [...rows].reverse().forEach(r => {
+    const isBest   = r.month === best.month;
+    const isLatest = r.month === latest.month;
+    const pc = r.mom === null ? 'var(--text3)' : r.mom >= 0 ? 'var(--green)' : 'var(--red)';
+    const pl = r.mom !== null ? (r.mom >= 0 ? '▲ ' : '▼ ') + Math.abs(r.mom).toFixed(1) + '%' : '--';
+    html += `<tr>
+      <td style="font-weight:600;color:var(--text)">${ml(r.month)}${isLatest ? ' <span class="badge bd-new">이번달</span>' : ''}${isBest ? ' <span class="badge" style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px">최고</span>' : ''}</td>
+      <td class="mono">${r.tc.toLocaleString()}건</td>
+      <td class="mono">${r.revenue.toLocaleString()}원</td>
+      <td class="mono">${r.atv.toLocaleString()}원</td>
+      <td class="mono" style="color:${pc}">${pl}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div></div>';
+
+  $('content').innerHTML = html;
+
+  setTimeout(() => {
+    const labels = rows.map(r => ml(r.month));
+    let datasets = [];
+    if (activeStore === 'all') {
+      D.stores.forEach(s => {
+        datasets.push({
+          label: s.name,
+          data: months.map(m => {
+            const bm = D.by_month[m];
+            const st = bm ? bm.stores.find(x => x.id === s.id) : null;
+            return st ? Math.round(st.revenue / 10000) : 0;
+          }),
+          backgroundColor: s.color + 'CC',
+          borderColor: s.color,
+          borderWidth: 0, stack: 'm', borderRadius: 4,
+        });
+      });
+    } else {
+      datasets.push({
+        label: '월 매출',
+        data: rows.map(r => Math.round(r.revenue / 10000)),
+        backgroundColor: storeColor + 'CC',
+        borderColor: storeColor,
+        borderWidth: 0, stack: 'm', borderRadius: 4,
+      });
+    }
+    CH.monthly = new Chart($('monthlyChart'), {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        ...chartDefaults,
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { ...chartDefaults.plugins, tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}만원` } } },
+        scales: {
+          x: { ...chartDefaults.scales.x, stacked: true },
+          y: { ...chartDefaults.scales.y, stacked: true, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + '만' } },
+        },
+      },
+    });
+    const leg = $('monthlyLegend');
     if (leg) leg.innerHTML = datasets.map(ds => `<div class="leg"><span class="leg-dot" style="background:${ds.borderColor}"></span>${ds.label}</div>`).join('');
   }, 0);
 };
