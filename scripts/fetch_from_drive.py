@@ -212,7 +212,8 @@ def parse_pos_file(buf, store_name):
         ).reset_index().rename(columns={'_date': 'date'})
         daily['store'] = store_name
         df_pay = daily
-        print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
+        detail_total = int(df_a['revenue'].sum())
+        print(f'     ✅ 일별 집계 완료: {len(df_pay)}행, 결제상세내역 총합={detail_total:,}원')
 
     # ── 상품 주문 상세내역 RAW 데이터로 파싱 (모든 파일 공통) ──────────
     # 컬럼: A(0)주문기준일자, B(1)결제상태, E(4)주문번호, F(5)상품명, H(7)카테고리,
