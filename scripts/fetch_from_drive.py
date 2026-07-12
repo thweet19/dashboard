@@ -156,9 +156,17 @@ def parse_pos_file(buf, store_name):
     # 컬럼: A(0)주문기준일자, B(1)결제상태, F(5)상품명, H(7)카테고리, L(11)수량, M(12)상품가격
     df_items = pd.DataFrame()
     try:
+        # 전체 컬럼 헤더 확인용 로그
+        _hdr = read_excel(buf, sheet_name=sheet_item_detail, header=0, nrows=0)
+        print(f'     📋 상품상세 전체컬럼({len(_hdr.columns)}개): {list(_hdr.columns)}')
+
         _raw = read_excel(buf, sheet_name=sheet_item_detail, header=0, skiprows=[1],
                           usecols=[0, 1, 5, 7, 11, 12])
         _raw.columns = ['date', 'status', 'product', 'category', 'cnt', 'price']
+
+        # 샘플 데이터 로그 (처음 3행)
+        print(f'     🔍 상품상세 샘플(최대3행):\n{_raw.head(3).to_string()}')
+
         statuses = _raw['status'].astype(str).str.strip().unique()
         print(f'     ℹ️  상품 상태값: {list(statuses)}')
         cancel_kw = {'취소', '환불', '부분취소', '결제취소', 'cancel'}
@@ -170,7 +178,11 @@ def parse_pos_file(buf, store_name):
         _raw['actual_price'] = _raw['price'] * _raw['cnt']
         _raw['store'] = store_name
         df_items = _raw[['date', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
-        print(f'     ✅ 상품 상세내역: {len(df_items)}행')
+
+        # 카테고리별 매출 합계 로그
+        cat_sum = df_items.groupby('category')['actual_price'].sum().sort_values(ascending=False)
+        print(f'     📊 카테고리별 매출합계:\n{cat_sum.to_string()}')
+        print(f'     ✅ 상품 상세내역: {len(df_items)}행, 총합={int(df_items["actual_price"].sum()):,}원')
     except Exception as e:
         import traceback
         print(f'     ❌ 상품 상세내역 파싱 실패: {e}')
