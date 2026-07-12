@@ -153,20 +153,12 @@ def parse_pos_file(buf, store_name):
         print(f'     ✅ 일별 집계 완료: {len(df_pay)}행')
 
     # ── 상품 주문 상세내역 RAW 데이터로 파싱 (모든 파일 공통) ──────────
-    # 컬럼: A(0)주문기준일자, B(1)결제상태, F(5)상품명, H(7)카테고리, L(11)수량, M(12)상품가격
+    # 컬럼: A(0)주문기준일자, B(1)결제상태, E(4)주문번호, F(5)상품명, H(7)카테고리, L(11)수량, M(12)상품가격
     df_items = pd.DataFrame()
     try:
-        # 전체 컬럼 헤더 확인용 로그
-        _hdr = read_excel(buf, sheet_name=sheet_item_detail, header=0, nrows=0)
-        print(f'     📋 상품상세 전체컬럼({len(_hdr.columns)}개): {list(_hdr.columns)}')
-
         _raw = read_excel(buf, sheet_name=sheet_item_detail, header=0, skiprows=[1],
-                          usecols=[0, 1, 5, 7, 11, 12])
-        _raw.columns = ['date', 'status', 'product', 'category', 'cnt', 'price']
-
-        # 샘플 데이터 로그 (처음 3행)
-        print(f'     🔍 상품상세 샘플(최대3행):\n{_raw.head(3).to_string()}')
-
+                          usecols=[0, 1, 4, 5, 7, 11, 12])
+        _raw.columns = ['date', 'status', 'order_id', 'product', 'category', 'cnt', 'price']
         statuses = _raw['status'].astype(str).str.strip().unique()
         print(f'     ℹ️  상품 상태값: {list(statuses)}')
         cancel_kw = {'취소', '환불', '부분취소', '결제취소', 'cancel'}
@@ -177,9 +169,7 @@ def parse_pos_file(buf, store_name):
         _raw['price'] = pd.to_numeric(_raw['price'], errors='coerce').fillna(0)
         _raw['actual_price'] = _raw['price'] * _raw['cnt']
         _raw['store'] = store_name
-        df_items = _raw[['date', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
-
-        # 카테고리별 매출 합계 로그
+        df_items = _raw[['date', 'order_id', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
         cat_sum = df_items.groupby('category')['actual_price'].sum().sort_values(ascending=False)
         print(f'     📊 카테고리별 매출합계:\n{cat_sum.to_string()}')
         print(f'     ✅ 상품 상세내역: {len(df_items)}행, 총합={int(df_items["actual_price"].sum()):,}원')
@@ -408,7 +398,8 @@ def main():
     if '_forder' not in df_items.columns:
         df_items['_forder'] = 0
     df_pay   = df_pay.sort_values(['date', '_forder']).drop_duplicates(subset=['date', 'store'], keep='last').drop(columns='_forder')
-    df_items = df_items.sort_values(['date', '_forder']).drop_duplicates(subset=['date', 'product', 'store'], keep='last').drop(columns='_forder')
+    # items dedup: 주문번호+상품+매장 기준 → 파일 중복 방지하면서 같은 날 같은 상품 다건 주문은 유지
+    df_items = df_items.sort_values(['date', '_forder']).drop_duplicates(subset=['order_id', 'product', 'store'], keep='last').drop(columns='_forder')
 
     print('📊 지표 계산 중...')
     result = compute_metrics(df_pay, df_items, df_detail)
