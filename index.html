@@ -942,7 +942,7 @@ const renderCategory = () => {
 
     // Donut legend
     const dl = $('donutLegend');
-    if (dl) dl.innerHTML = catsAdj.map(c => `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${CAT_COLORS[c.name]||'#9090A8'}"></span>${c.name}</div><div class="dl-right">${c.adjShare.toFixed(1)}%</div></div>`).join('');
+    if (dl) dl.innerHTML = catsAdj.map(c => `<div class="dl-row"><div class="dl-left"><span class="dl-dot" style="background:${CAT_COLORS[c.name]||'#9090A8'}"></span>${c.name}</div><div class="dl-right" style="display:flex;gap:10px;align-items:center"><span style="color:var(--text3);font-size:11px">${fmt(c.revenue)}원</span><span style="min-width:38px;text-align:right">${c.adjShare.toFixed(1)}%</span></div></div>`).join('');
 
     // Horizontal bar
     CH.hbar = new Chart($('hbarChart'), {
