@@ -172,6 +172,17 @@ tbody tr:hover td{background:var(--surface2);}
 .empty{padding:60px 20px;text-align:center;color:var(--text2);}
 .empty-title{font-size:16px;font-weight:600;margin-bottom:8px;}
 .empty-sub{font-size:13px;color:var(--text3);}
+/* ── Warning Banner ── */
+.warn-banner{display:none;margin:12px 16px 0;border-radius:10px;border:1px solid #92400e;background:rgba(120,50,0,.25);padding:12px 14px;}
+.warn-banner.visible{display:block;}
+.warn-banner-head{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:6px;cursor:pointer;}
+.warn-banner-head .wb-arrow{font-size:10px;transition:transform .2s;margin-left:auto;}
+.warn-banner-head.open .wb-arrow{transform:rotate(180deg);}
+.warn-banner-body{display:none;border-top:1px solid rgba(251,191,36,.15);padding-top:8px;margin-top:2px;}
+.warn-banner-body.open{display:block;}
+.warn-item{font-size:11px;color:#fde68a;padding:3px 0;line-height:1.5;}
+.warn-item .wi-store{font-weight:600;color:#fbbf24;margin-right:4px;}
+.warn-item .wi-file{color:rgba(253,230,138,.6);font-size:10px;}
 
 /* ── Responsive ── */
 @media(max-width:900px){
@@ -269,6 +280,13 @@ tbody tr:hover td{background:var(--surface2);}
           <button class="vtab" data-view="pattern">패턴</button>
         </div>
       </div>
+    </div>
+    <div id="warnBanner" class="warn-banner">
+      <div class="warn-banner-head" onclick="toggleWarnBanner(this)">
+        <span>⚠️ 매출 엑셀파일 구조가 상이합니다</span>
+        <span class="wb-arrow">▼</span>
+      </div>
+      <div class="warn-banner-body" id="warnBannerBody"></div>
     </div>
     <div class="content" id="content">
       <div class="empty"><div class="empty-title">데이터 로딩 중...</div></div>
@@ -1090,6 +1108,30 @@ const renderPattern = () => {
   }, 0);
 };
 
+// ── WARNING BANNER ─────────────────────────────────────────────────────────
+const renderWarnings = (warnings) => {
+  const banner = $('warnBanner');
+  const body   = $('warnBannerBody');
+  if (!banner || !body) return;
+  const errors = warnings.filter(w => w.severity === 'error');
+  const all    = warnings;
+  if (all.length === 0) { banner.classList.remove('visible'); return; }
+  banner.classList.add('visible');
+  // 오류 있으면 머리 색 강조
+  const head = banner.querySelector('.warn-banner-head');
+  if (errors.length > 0) head.style.color = '#f87171';
+  body.innerHTML = all.map(w => `
+    <div class="warn-item">
+      <span class="wi-store">[${w.store}]</span>${w.detail}
+      <span class="wi-file">(${w.file})</span>
+    </div>`).join('');
+};
+
+const toggleWarnBanner = (head) => {
+  head.classList.toggle('open');
+  $('warnBannerBody').classList.toggle('open');
+};
+
 // ── APP START ──────────────────────────────────────────────────────────────
 const startApp = async () => {
   $('login').style.display = 'none';
@@ -1102,6 +1144,7 @@ const startApp = async () => {
       const months = Object.keys(D.by_month).sort();
       if (months.length > 0) activeMonth = months[months.length - 1];
     }
+    renderWarnings(D.warnings || []);
     updateNav();
     render();
   } catch (e) {

@@ -99,6 +99,68 @@ def find_sheet(sheet_names, keywords):
     return None
 
 
+# 기대 시트명 키워드 (find_sheet 기준)
+REQUIRED_SHEETS = [
+    (['결제', '합계'],    '결제 합계'),
+    (['결제', '상세'],    '결제 상세내역'),
+    (['상품', '주문', '상세'], '상품 주문 상세내역'),
+]
+# 상품 주문 상세내역 기대 컬럼 (위치 → 포함 키워드)
+EXPECTED_ITEM_COLS = {
+    0:  ['일자'],
+    1:  ['상태'],
+    4:  ['번호'],
+    5:  ['상품명', '상품'],
+    7:  ['카테고리'],
+    11: ['수량'],
+    12: ['가격'],
+}
+
+
+def validate_excel_structure(buf, store_name, file_name):
+    """엑셀 파일 구조 검증. 이상 있으면 warning dict 리스트 반환."""
+    issues = []
+
+    def warn(detail, severity='error'):
+        issues.append({
+            'store': store_name,
+            'file': file_name,
+            'message': '매출 엑셀파일 구조가 상이합니다',
+            'detail': detail,
+            'severity': severity,
+        })
+
+    sheets = get_sheet_names(buf)
+
+    # 1. 필수 시트 존재 확인
+    for keywords, label in REQUIRED_SHEETS:
+        if not find_sheet(sheets, keywords):
+            warn(f"필수 시트 '{label}'를 찾을 수 없습니다 (발견된 시트: {', '.join(sheets)})")
+
+    # 2. 상품 주문 상세내역 컬럼 구조 확인
+    sheet_item_detail = find_sheet(sheets, ['상품', '주문', '상세'])
+    if sheet_item_detail:
+        try:
+            hdr = read_excel(buf, sheet_name=sheet_item_detail, header=0, nrows=0)
+            cols = list(hdr.columns)
+            total = len(cols)
+            for pos, keywords in EXPECTED_ITEM_COLS.items():
+                if pos >= total:
+                    warn(f"상품 주문 상세내역: 컬럼 수({total}개)가 부족합니다 — {pos+1}번째 컬럼({keywords[0]}) 없음")
+                else:
+                    col_name = str(cols[pos])
+                    if not any(kw in col_name for kw in keywords):
+                        warn(
+                            f"상품 주문 상세내역 {pos+1}번째 컬럼: "
+                            f"'{col_name}' (기대값: {'/'.join(keywords)})",
+                            severity='warning',
+                        )
+        except Exception as e:
+            warn(f"상품 주문 상세내역 시트 열기 실패: {e}")
+
+    return issues
+
+
 def parse_pos_file(buf, store_name):
     sheets = get_sheet_names(buf)
     print(f'     📋 시트 목록: {sheets}')
@@ -344,6 +406,7 @@ def main():
     folder_id = os.environ['GOOGLE_DRIVE_FOLDER_ID']
 
     all_pay, all_items, all_detail = [], [], []
+    all_warnings = []
     file_order = 0
 
     for folder in list_folder(service, folder_id):
@@ -369,6 +432,14 @@ def main():
             buf = download_file(service, f['id'])
             buf = decrypt_if_needed(buf)
             try:
+                # 구조 검증 먼저
+                file_warnings = validate_excel_structure(buf, fname, f['name'])
+                if file_warnings:
+                    for w in file_warnings:
+                        sev = '❌' if w['severity'] == 'error' else '⚠️'
+                        print(f'     {sev} 구조경고: {w["detail"]}')
+                    all_warnings.extend(file_warnings)
+
                 pay, items, detail = parse_pos_file(buf, fname)
                 print(f'     📊 결제합계: {len(pay)}행, 상품: {len(items)}행, 상세: {len(detail)}행')
                 if not pay.empty:
@@ -403,6 +474,10 @@ def main():
 
     print('📊 지표 계산 중...')
     result = compute_metrics(df_pay, df_items, df_detail)
+    result['warnings'] = all_warnings
+    if all_warnings:
+        errors = [w for w in all_warnings if w['severity'] == 'error']
+        print(f'  ⚠️  구조 경고 {len(all_warnings)}건 (오류 {len(errors)}건) → JSON에 포함됨')
 
     out = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'latest.json')
     os.makedirs(os.path.dirname(out), exist_ok=True)
