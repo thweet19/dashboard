@@ -172,15 +172,20 @@ def parse_pos_file(buf, store_name):
     print(f'     → 결제합계={sheet_pay}, 상품={sheet_items}, 상세={sheet_detail}')
 
     # ── 결제 상세내역 (모든 파일에서 잘 읽힘) ──────────────────────────
+    # 컬럼: A(0)결제기준일자, B(1)결제시각, D(3)주문번호, F(5)결제금액, H(7)결제수단, J(9)결제상태
     df_detail = pd.DataFrame()
+    order_pay_date = {}   # 주문번호 → 결제기준일자 (상품 날짜 보정용)
     try:
-        _det_hdr = read_excel(buf, sheet_name=sheet_detail, header=0, nrows=0)
-        print(f'     📋 결제상세내역 컬럼({len(_det_hdr.columns)}개): {list(_det_hdr.columns)}')
-        df_detail = read_excel(buf, sheet_name=sheet_detail, header=0, skiprows=[1], usecols=[0, 1, 5, 7, 9])
-        df_detail.columns = ['date', 'time', 'revenue', 'method', 'status']
+        df_detail = read_excel(buf, sheet_name=sheet_detail, header=0, skiprows=[1], usecols=[0, 1, 3, 5, 7, 9])
+        df_detail.columns = ['date', 'time', 'order_id', 'revenue', 'method', 'status']
         df_detail = df_detail.dropna(subset=['date']).copy()
         df_detail['revenue'] = pd.to_numeric(df_detail['revenue'], errors='coerce').fillna(0)
         df_detail['store'] = store_name
+        # 승인 건만으로 주문번호→결제기준일자 매핑 생성
+        _승인 = df_detail[df_detail['status'] == '승인'].copy()
+        _승인['_pdate'] = pd.to_datetime(_승인['date'], errors='coerce')
+        order_pay_date = dict(zip(_승인['order_id'].astype(str), _승인['_pdate']))
+        print(f'     🔗 결제기준일 매핑: {len(order_pay_date)}건')
     except Exception as e:
         print(f'     ⚠️ 상세내역 파싱 실패: {e}')
 
@@ -235,6 +240,14 @@ def parse_pos_file(buf, store_name):
         _raw['actual_price'] = pd.to_numeric(_raw['actual_price'], errors='coerce').fillna(0)
         _raw['store'] = store_name
         df_items = _raw[['date', 'order_id', 'product', 'category', 'cnt', 'actual_price', 'store']].copy()
+
+        # ── 날짜 보정: 주문기준일자 → 결제기준일자 (심야 영업 월 경계 오류 방지) ──
+        if order_pay_date:
+            _mapped = df_items['order_id'].astype(str).map(order_pay_date)
+            matched = _mapped.notna().sum()
+            df_items['date'] = _mapped.combine_first(df_items['date'])
+            print(f'     🔗 날짜 보정: {matched}/{len(df_items)}행 결제기준일자로 교체')
+
         cat_sum = df_items.groupby('category')['actual_price'].sum().sort_values(ascending=False)
         print(f'     📊 카테고리별 매출합계(실판매금액 기준):\n{cat_sum.to_string()}')
         print(f'     ✅ 상품 상세내역: {len(df_items)}행, 총합={int(df_items["actual_price"].sum()):,}원')
