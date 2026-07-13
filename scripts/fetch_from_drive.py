@@ -257,7 +257,13 @@ def parse_pos_file(buf, store_name):
             _valid   = _mapped.notna() & ((_mapped - _item_dt).abs() <= pd.Timedelta(days=3))
             df_items['pay_date'] = df_items['date'].copy()
             df_items.loc[_valid, 'pay_date'] = _mapped[_valid]
-            print(f'     📅 결제일 매핑: {int(_valid.sum())}/{len(df_items)}행 교체 (3일 이내)')
+            _orig_m = pd.to_datetime(df_items['date'],     errors='coerce').dt.strftime('%Y-%m')
+            _new_m  = pd.to_datetime(df_items['pay_date'], errors='coerce').dt.strftime('%Y-%m')
+            _month_changed = (_orig_m != _new_m).sum()
+            print(f'     📅 결제일 매핑: {int(_valid.sum())}/{len(df_items)}행 교체 (3일 이내), 월변경={int(_month_changed)}건')
+            if _month_changed > 0:
+                chg = df_items[_orig_m != _new_m][['date','pay_date','actual_price']].head(5)
+                print(f'     📅 월변경 샘플:\n{chg.to_string(index=False)}')
         else:
             df_items['pay_date'] = df_items['date']
 
@@ -324,6 +330,11 @@ def compute_monthly(df_pay, df_items, df_detail):
     di['_month'] = pd.to_datetime(di[_date_col], errors='coerce').dt.strftime('%Y-%m')
 
     months = sorted(dp['_month'].unique())
+    print('  📊 월별 결제기준 vs 상품기준 비교:')
+    for m in months:
+        pay_r = int(dp[dp['_month'] == m]['revenue'].sum())
+        item_r = int(di[di['_month'] == m]['actual_price'].sum()) if 'actual_price' in di.columns else 0
+        print(f'     {m}: 결제={pay_r:,}  상품={item_r:,}  차={pay_r-item_r:,}')
     by_month = {}
     for month in months:
         mp = dp[dp['_month'] == month]
